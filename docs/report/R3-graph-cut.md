@@ -1,7 +1,8 @@
-# R3: Graph cut
+# R3: Graph cut formulation + Edmonds-Karp
 
 **Owner:** Zhi Kai  **Code partner:** C3 ([`docs/tasks/C3-graph-cut.md`](../tasks/C3-graph-cut.md))
-**Assignment items:** 4, 5b (graph cut part), 5c (graph cut vs DP)
+**Works with:** R4 (Dinic and the graph cut vs DP comparison), who builds on your formulation section
+**Assignment items:** 4 (formulation and Edmonds-Karp), 5b (graph cut, EK part)
 
 ## What to write
 
@@ -15,28 +16,27 @@
 - Horizontal seams: transposed image.
 - Mention alternatives: forward-energy capacities, and that DP is a special structure of the same problem.
 
-### 2. Max-flow algorithms and complexity (5b, graph cut part)
+### 2. Edmonds-Karp and its complexity (5b, EK part)
 
-- Edmonds-Karp: how it works (BFS shortest augmenting path), bound `O(V E^2)`, and what V and E are here (`V ~ mn`, `E ~ 5mn`, give the edge count).
-- Dinic: level graph and blocking flows, bound `O(V^2 E)`, and why it is much faster in practice on grid-like graphs.
-- Space for the graph. Compare with DP's `O(mn)` time for one seam: say honestly why graph cut is slower, and what it offers in exchange (generality: the same machinery handles other constraints and energies).
-- Give the bounds with the reasoning; mark clearly what is worst case and what is observed.
+- Edmonds-Karp: how it works (BFS shortest augmenting path), bound `O(V E^2)`, and what V and E are here (`V ~ mn`, `E ~ 5mn`, give the edge count). Give the reasoning behind the bound, not only the result.
+- Space for the graph.
+- Compare with DP's `O(mn)` time for one seam: say honestly why graph cut is slower, and what it offers in exchange (generality: the same machinery handles other constraints and energies).
+- Mark clearly what is worst case and what is observed.
+- Dinic is covered by R4. Agree with R4 who explains the shared parts (the network and the residual graph) so they are written once and referenced.
 
-### 3. Results and graph cut vs DP (5c)
+### 3. Correctness
 
-- **Correctness:** C3's test that graph-cut seam cost equals DP seam cost on random maps, for both EK and Dinic. Explain that the seams may differ in position when several cheapest seams tie.
-- **Seams and visual quality:** the same image with DP and graph-cut seams; outputs should look identical when the costs are equal.
-- **Running time:** EK vs Dinic vs DP on several image sizes (from C3 or C2's CSV), as a table and a chart; say at which size EK stops being practical.
-- Conclude: should anyone use graph cut for plain seam carving?
+- C3's test that EK graph-cut seam cost equals DP seam cost on random maps. Explain that the seams may differ in position when several cheapest seams tie.
+- The max-flow tests on known graphs.
 
 ## Needs from the code partner (C3)
 
-- Final network definition including the last-column fix; max-flow test results; timing CSV; seam images.
+- Final network definition including the last-column fix; capacity choice; EK test results; seam images.
 
 ## Figures and tables
 
-- Flow network example with the cut; DP vs graph-cut seam overlay; EK/Dinic/DP timing chart.
+- Flow network example with the cut; DP vs graph-cut seam overlay.
 
 ## Draft
 
-(Write here. Suggested headings: `## Graph cut formulation`, `## Max-flow algorithms and complexity`, `## Graph cut versus dynamic programming`)
+(Write here. Suggested headings: `## Graph cut formulation`, `## Edmonds-Karp and complexity`, `## Graph cut correctness`)

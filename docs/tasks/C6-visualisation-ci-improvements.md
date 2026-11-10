@@ -1,6 +1,6 @@
-# C5: Visualisation + CI + improvements
+# C6: Visualisation + CI + improvements
 
-**Owner:** Zhe An  **Report partner:** R5 ([`docs/report/R5-improvements-bonus-front.md`](../report/R5-improvements-bonus-front.md))
+**Owner:** Zhe An  **Report partner:** R6 ([`docs/report/R6-improvements-bonus-front.md`](../report/R6-improvements-bonus-front.md))
 **Assignment items:** bonus 7a (step-by-step visualisation) and 7c (CI/CD), and 5d (improvements)
 
 ## Goal
@@ -15,7 +15,7 @@ Make every seam visible, keep the repo continuously tested, and answer the assig
    - `draw_seam(const Image&, const Seam&, bool vertical)` returns a copy with the seam drawn in a bright colour
    - an overview image with **all removed seams drawn on the original image**. Seams are found on shrinking images, so each seam's coordinates must be mapped back to original coordinates (keep an index map that is shrunk together with the image)
 2. `seamcli` option `--steps <dir>`: write one frame per removal (`step_0001.png`, ...) using the existing `StepCallback` in `resize.h`, plus the all-seams overview. Coordinate with C2, who owns `cli/`: add your option in a new file if possible.
-3. Provide C4 a function to render step *k* on demand, so the GUI does not store every frame in memory. Propose the interface on day 1.
+3. Provide C5 a function to render step *k* on demand, so the GUI does not store every frame in memory. Propose the interface on day 1.
 4. Tests: mapping back to original coordinates is correct (every drawn seam pixel lies on the original image and no two seams share a pixel).
 
 ### B. CI/CD (bonus c)
@@ -39,7 +39,7 @@ Implement each variant **next to** the baseline (do not replace `find_seam_dp`),
 
 - `src/visualize.*`, `--steps` in `seamcli`, the optimised variants (new files), tests for all of them
 - Extended CI workflow with a passing run on `main`, badge in `README.md`
-- `results/improvements_*.csv` (time, memory, threads) and a sample step-by-step output (a few frames and the all-seams overview) in `docs/report/figures/` for R5
+- `results/improvements_*.csv` (time, memory, threads) and a sample step-by-step output (a few frames and the all-seams overview) in `docs/report/figures/` for R6
 
 ## Acceptance checks
 
@@ -51,4 +51,4 @@ Implement each variant **next to** the baseline (do not replace `find_seam_dp`),
 
 - C1 for the baseline and for any change to `resize.h`
 - C2 for `run_benchmark` and `cli/`
-- C4 for the step rendering interface
+- C5 for the step rendering interface

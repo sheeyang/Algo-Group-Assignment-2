@@ -1,6 +1,6 @@
-# C4: Dear ImGui + ImPlot GUI
+# C5: Dear ImGui + ImPlot GUI
 
-**Owner:** Jarrel  **Report partner:** R4 ([`docs/report/R4-intro-design-gui.md`](../report/R4-intro-design-gui.md))
+**Owner:** Jarrel  **Report partner:** R5 ([`docs/report/R5-intro-design-gui.md`](../report/R5-intro-design-gui.md))
 **Assignment items:** bonus 7b (user interaction), the demo for 8c, and the results charts
 
 ## Goal
@@ -16,14 +16,14 @@ A native desktop app where the user opens an image, changes its width and height
    - run the resize on a **worker thread** with progress and a cancel option, so the UI never freezes; show elapsed time and total seam cost
    - handle errors visibly (bad file, algorithm not implemented yet) instead of crashing
 3. **Benchmark panel:** call C2's `run_benchmark`, plot time versus image size per algorithm with **ImPlot**, and an **Export CSV** button that writes the same rows (`write_csv`).
-4. **Step-through panel:** show the seams removed one at a time using C5's rendering API (agree the interface with C5, see `docs/tasks/C5-visualisation-ci-improvements.md`). Until C5 lands, stub it.
+4. **Step-through panel:** show the seams removed one at a time using C6's rendering API (agree the interface with C6, see `docs/tasks/C6-visualisation-ci-improvements.md`). Until C6 lands, stub it.
 5. Keep all image and seam logic in `seamlib`; the GUI only calls it and draws.
 
 ## Deliverables
 
 - `gui/` with the `seamgui` target, buildable on Windows (MinGW) and Linux with the instructions in `README.md`
 - A short "How to build and use the GUI" section added to `README.md`
-- Screenshots in `docs/report/figures/` (main window, resize in progress, benchmark plot) for R4
+- Screenshots in `docs/report/figures/` (main window, resize in progress, benchmark plot) for R5
 - A 1-minute demo script for the presentation
 
 ## Acceptance checks
@@ -36,5 +36,5 @@ A native desktop app where the user opens an image, changes its width and height
 ## Dependencies
 
 - C2 for `run_benchmark` / `write_csv` (agree the header early; stub until ready)
-- C5 for step rendering
+- C6 for step rendering
 - Greedy and graph cut may not exist yet: the GUI must cope with "not implemented" gracefully

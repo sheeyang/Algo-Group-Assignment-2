@@ -15,7 +15,7 @@ Implement the greedy seam finder, turn `seamcli` into a proper tool, and build t
 2. **Tests** in `tests/test_greedy.cpp`:
    - a hand-built `EnergyMap` where greedy gets trapped and returns a strictly more expensive seam than DP (this is the example for the report)
    - on random maps: seam is valid, and `seam_cost(greedy) >= seam_cost(dp)` always
-3. **Benchmark runner** in `src/bench.h` / `src/bench.cpp` (no GUI code, the GUI and CLI both use it). Proposed contract, agree changes with C4:
+3. **Benchmark runner** in `src/bench.h` / `src/bench.cpp` (no GUI code, the GUI and CLI both use it). Proposed contract, agree changes with C5:
    ```cpp
    struct BenchRow { std::string algorithm; int width, height; int seams; double ms; double total_cost; };
    std::vector<BenchRow> run_benchmark(const Image& img, const std::vector<Algorithm>& algos,
@@ -31,7 +31,7 @@ Implement the greedy seam finder, turn `seamcli` into a proper tool, and build t
 ## Deliverables
 
 - `src/seam_greedy.cpp`, `src/bench.*`, updated `cli/`, `tests/test_greedy.cpp`, `testdata/` with `README.md`
-- `results/bench_*.csv` produced by your runner on the test images (commit them; R2, R3 and R5 build tables from these)
+- `results/bench_*.csv` produced by your runner on the test images (commit them; R2, R3 and R6 build tables from these)
 - For R2: seam and output images for greedy vs DP on at least 3 test images, and the observed timing ratio
 
 ## Acceptance checks
@@ -42,4 +42,4 @@ Implement the greedy seam finder, turn `seamcli` into a proper tool, and build t
 
 ## Interfaces others rely on
 
-`BenchRow` and `run_benchmark` are used by the C4 GUI (plot + CSV export). Publish the header early, even with a stub body.
+`BenchRow` and `run_benchmark` are used by the C5 GUI (plot + CSV export). Publish the header early, even with a stub body.

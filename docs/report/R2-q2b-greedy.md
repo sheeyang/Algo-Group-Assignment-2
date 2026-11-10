@@ -10,7 +10,7 @@
 The question: "Discuss whether applying the Divide and Conquer method could improve the efficiency of this computation."
 - State the cost of the direct Sobel filter on an m x n image (a fixed-size kernel per pixel) and what it means for the best possible improvement.
 - Discuss what divide and conquer can and cannot give: splitting the image into blocks or strips, the overlap (halo) of border pixels each block needs, the recurrence for the split, and why the total work stays the same order.
-- Discuss where it **does** help: running blocks in parallel, cache locality. Link to what C5 measures for multi-threading.
+- Discuss where it **does** help: running blocks in parallel, cache locality. Link to what C6 measures for multi-threading.
 - Mention related ideas and whether they apply: separable kernels (Sobel is a smoothing kernel times a difference kernel), and FFT-based convolution (when it pays off and why it does not for a 3x3 kernel).
 - Give a clear verdict with the reasoning, not just a list.
 
