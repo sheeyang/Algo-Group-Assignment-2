@@ -1,6 +1,6 @@
 # C5: Visualisation + CI + improvements
 
-**Owner:** ____________  **Report partner:** R5 ([`docs/report/R5-improvements-bonus-front.md`](../report/R5-improvements-bonus-front.md))
+**Owner:** Zhe An  **Report partner:** R5 ([`docs/report/R5-improvements-bonus-front.md`](../report/R5-improvements-bonus-front.md))
 **Assignment items:** bonus 7a (step-by-step visualisation) and 7c (CI/CD), and 5d (improvements)
 
 ## Goal

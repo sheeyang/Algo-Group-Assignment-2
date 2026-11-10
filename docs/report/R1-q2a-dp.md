@@ -1,6 +1,6 @@
 # R1: Q2a and the DP algorithm
 
-**Owner:** ____________  **Code partner:** C1 ([`docs/tasks/C1-core-dp.md`](../tasks/C1-core-dp.md))
+**Owner:** Shee Yang  **Code partner:** C1 ([`docs/tasks/C1-core-dp.md`](../tasks/C1-core-dp.md))
 **Assignment items:** 2a (i), 2a (ii), 1, 5b (DP part), 5a
 
 ## What to write

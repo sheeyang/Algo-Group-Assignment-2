@@ -1,6 +1,6 @@
 # R2: Q2b, greedy, and greedy vs DP
 
-**Owner:** ____________  **Code partner:** C2 ([`docs/tasks/C2-greedy-cli-bench.md`](../tasks/C2-greedy-cli-bench.md))
+**Owner:** Wei Jun  **Code partner:** C2 ([`docs/tasks/C2-greedy-cli-bench.md`](../tasks/C2-greedy-cli-bench.md))
 **Assignment items:** 2b, 3, 5b (greedy part), 5c (greedy vs DP)
 
 ## What to write

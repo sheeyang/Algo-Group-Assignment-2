@@ -1,6 +1,6 @@
 # C3: Graph cut (min-cut / max-flow)
 
-**Owner:** ____________  **Report partner:** R3 ([`docs/report/R3-graph-cut.md`](../report/R3-graph-cut.md))
+**Owner:** Zhi Kai  **Report partner:** R3 ([`docs/report/R3-graph-cut.md`](../report/R3-graph-cut.md))
 **Assignment items:** 4, plus the evidence for 5b and 5c
 
 ## Goal

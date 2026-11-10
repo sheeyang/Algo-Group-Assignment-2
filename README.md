@@ -35,21 +35,21 @@ Full task descriptions (what to do and what to deliver): [`docs/tasks/`](docs/ta
 
 | # | Owner | Coding task |
 |---|-------|-------------|
-| C1 | | **Core + DP**: image I/O, Sobel energy, DP seam finder, resize loop, DP unit tests (hand-checked seams) |
-| C2 | | **Greedy + CLI/benchmarks**: greedy seam finder, `seamcli` options, benchmark runner that writes CSV (time and seam cost per algorithm and image size) |
-| C3 | | **Graph cut**: flow network from the brief, Edmonds-Karp and Dinic, tests that graph-cut seam cost equals DP seam cost |
-| C4 | | **GUI**: Dear ImGui + ImPlot app, width/height sliders (bonus b), algorithm picker, benchmark plot with CSV export |
-| C5 | | **Visualisation + CI + improvements**: step frames with every seam drawn (bonus a), GitHub Actions (bonus c), DP improvements for 5d (rolling rows instead of the full table, multi-threading experiment) |
+| C1 | Shee Yang | **Core + DP**: image I/O, Sobel energy, DP seam finder, resize loop, DP unit tests (hand-checked seams) |
+| C2 | Wei Jun | **Greedy + CLI/benchmarks**: greedy seam finder, `seamcli` options, benchmark runner that writes CSV (time and seam cost per algorithm and image size) |
+| C3 | Zhi Kai | **Graph cut**: flow network from the brief, Edmonds-Karp and Dinic, tests that graph-cut seam cost equals DP seam cost |
+| C4 | Jarrel | **GUI**: Dear ImGui + ImPlot app, width/height sliders (bonus b), algorithm picker, benchmark plot with CSV export |
+| C5 | Zhe An | **Visualisation + CI + improvements**: step frames with every seam drawn (bonus a), GitHub Actions (bonus c), DP improvements for 5d (rolling rows instead of the full table, multi-threading experiment) |
 
 ### Report tasks
 
 | # | Owner | Report task |
 |---|-------|-------------|
-| R1 | | **Q2a (i) and (ii)** (exponential seam count, DP recurrence) + DP algorithm, correctness and time/space complexity (5b) |
-| R2 | | **Q2b** (divide and conquer for Sobel) + greedy algorithm section + greedy vs DP comparison of seams, visual quality and running time (3, 5c) |
-| R3 | | **Graph cut** section (min-cut formulation, max-flow min-cut argument, Edmonds-Karp vs Dinic complexity) + graph cut vs DP comparison (4, 5c) |
-| R4 | | **Introduction, system design and architecture, test images and evaluation method, GUI / user-interaction write-up (bonus b)**, references |
-| R5 | | **Front matter** (team ID, members with SIT IDs, GitHub and video links), **improvements and bonus** write-up (5d, bonus a and c), **AI usage declaration**, final assembly and export of the report |
+| R1 | Shee Yang | **Q2a (i) and (ii)** (exponential seam count, DP recurrence) + DP algorithm, correctness and time/space complexity (5b) |
+| R2 | Wei Jun | **Q2b** (divide and conquer for Sobel) + greedy algorithm section + greedy vs DP comparison of seams, visual quality and running time (3, 5c) |
+| R3 | Zhi Kai | **Graph cut** section (min-cut formulation, max-flow min-cut argument, Edmonds-Karp vs Dinic complexity) + graph cut vs DP comparison (4, 5c) |
+| R4 | Jarrel | **Introduction, system design and architecture, test images and evaluation method, GUI / user-interaction write-up (bonus b)**, references |
+| R5 | Zhe An | **Front matter** (team ID, members with SIT IDs, GitHub and video links), **improvements and bonus** write-up (5d, bonus a and c), **AI usage declaration**, final assembly and export of the report |
 
 Suggested pairing: person *n* does C*n* and R*n*, but any swap works as long as each person has exactly one of each.
 

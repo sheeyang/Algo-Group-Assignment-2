@@ -5,11 +5,11 @@ Coding tasks live in [`docs/tasks/`](../tasks/README.md). Person *n* suggested p
 
 | File | Owner | Covers |
 |------|-------|--------|
-| [R1-q2a-dp.md](R1-q2a-dp.md) | | Q2a (i) and (ii), DP algorithm, correctness, complexity |
-| [R2-q2b-greedy.md](R2-q2b-greedy.md) | | Q2b, greedy algorithm, greedy vs DP |
-| [R3-graph-cut.md](R3-graph-cut.md) | | Graph cut formulation, EK vs Dinic, graph cut vs DP |
-| [R4-intro-design-gui.md](R4-intro-design-gui.md) | | Introduction, architecture, evaluation method, GUI (bonus b), references |
-| [R5-improvements-bonus-front.md](R5-improvements-bonus-front.md) | | Front matter, improvements (5d), bonus a and c, AI declaration, final assembly |
+| [R1-q2a-dp.md](R1-q2a-dp.md) | Shee Yang | Q2a (i) and (ii), DP algorithm, correctness, complexity |
+| [R2-q2b-greedy.md](R2-q2b-greedy.md) | Wei Jun | Q2b, greedy algorithm, greedy vs DP |
+| [R3-graph-cut.md](R3-graph-cut.md) | Zhi Kai | Graph cut formulation, EK vs Dinic, graph cut vs DP |
+| [R4-intro-design-gui.md](R4-intro-design-gui.md) | Jarrel | Introduction, architecture, evaluation method, GUI (bonus b), references |
+| [R5-improvements-bonus-front.md](R5-improvements-bonus-front.md) | Zhe An | Front matter, improvements (5d), bonus a and c, AI declaration, final assembly |
 
 ## Final report structure (follows the submission instructions, item 9a)
 

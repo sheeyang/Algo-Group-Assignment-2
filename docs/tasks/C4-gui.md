@@ -1,6 +1,6 @@
 # C4: Dear ImGui + ImPlot GUI
 
-**Owner:** ____________  **Report partner:** R4 ([`docs/report/R4-intro-design-gui.md`](../report/R4-intro-design-gui.md))
+**Owner:** Jarrel  **Report partner:** R4 ([`docs/report/R4-intro-design-gui.md`](../report/R4-intro-design-gui.md))
 **Assignment items:** bonus 7b (user interaction), the demo for 8c, and the results charts
 
 ## Goal

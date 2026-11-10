@@ -1,6 +1,6 @@
 # C2: Greedy + CLI + benchmarks
 
-**Owner:** ____________  **Report partner:** R2 ([`docs/report/R2-q2b-greedy.md`](../report/R2-q2b-greedy.md))
+**Owner:** Wei Jun  **Report partner:** R2 ([`docs/report/R2-q2b-greedy.md`](../report/R2-q2b-greedy.md))
 **Assignment items:** 3, plus the evidence for 5c, and the shared benchmark used by the GUI
 
 ## Goal

@@ -1,6 +1,6 @@
 # R4: Introduction, design, evaluation method, GUI, references
 
-**Owner:** ____________  **Code partner:** C4 ([`docs/tasks/C4-gui.md`](../tasks/C4-gui.md))
+**Owner:** Jarrel  **Code partner:** C4 ([`docs/tasks/C4-gui.md`](../tasks/C4-gui.md))
 **Assignment items:** report structure (9a iii), bonus 7b, references
 
 ## What to write

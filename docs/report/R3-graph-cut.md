@@ -1,6 +1,6 @@
 # R3: Graph cut
 
-**Owner:** ____________  **Code partner:** C3 ([`docs/tasks/C3-graph-cut.md`](../tasks/C3-graph-cut.md))
+**Owner:** Zhi Kai  **Code partner:** C3 ([`docs/tasks/C3-graph-cut.md`](../tasks/C3-graph-cut.md))
 **Assignment items:** 4, 5b (graph cut part), 5c (graph cut vs DP)
 
 ## What to write

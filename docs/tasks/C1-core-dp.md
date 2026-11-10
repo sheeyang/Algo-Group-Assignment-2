@@ -1,6 +1,6 @@
 # C1: Core + DP
 
-**Owner:** ____________  **Report partner:** R1 ([`docs/report/R1-q2a-dp.md`](../report/R1-q2a-dp.md))
+**Owner:** Shee Yang  **Report partner:** R1 ([`docs/report/R1-q2a-dp.md`](../report/R1-q2a-dp.md))
 **Assignment items:** 1 (a, b, c), the correctness base for 3, 4 and 5
 
 ## Goal
