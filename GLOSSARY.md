@@ -23,7 +23,7 @@ The sum of the energy of every pixel on a seam. The quantity every algorithm tri
 _Avoid_: Seam energy, seam weight
 
 **Optimal seam**:
-A seam with the lowest possible seam cost in the current image. Ties go to the leftmost (or topmost) candidate so results are deterministic.
+A seam with the lowest possible seam cost in the current image. Ties go to the leftmost (or topmost) candidate so results are deterministic. "Leftmost" is judged from the bottom row upward: among tied seams, pick the one with the smallest column in the last row, then in the row above, and so on. For a horizontal seam the same rule reads "topmost", from the rightmost column leftward.
 _Avoid_: Best seam, shortest path
 
 ### Energy
@@ -36,7 +36,7 @@ _Avoid_: Disruption measure, importance, gradient (gradient is an input to energ
 The grid of energy values for the whole image, recomputed after every seam removal.
 
 **Backward energy**:
-Energy computed from the current image alone, as the Sobel gradient magnitude of its grayscale form. The default.
+Energy computed from the current image alone, as the Sobel gradient magnitude of its grayscale form, taken as the sum of the absolute horizontal and vertical Sobel responses (|Gx| + |Gy|), not the Euclidean norm. The default.
 _Avoid_: Standard energy, plain energy
 
 **Forward energy**:
