@@ -24,6 +24,34 @@ ctest --test-dir build --output-on-failure
 build/cli/seamcli in.png out.png 400 300 dp
 ```
 
+On Windows with Visual Studio, leave out `-G Ninja` and add `--config Release` to the build and `-C Release` to `ctest`; the binaries are then in `build/cli/Release/` and `build/tests/Release/`.
+
+## Command-line tool (`seamcli`)
+
+```
+seamcli in.png out.png 600 400 greedy                 # positional: width, height, algorithm
+seamcli in.png out.png --algo dp --width 600          # only the width; height unchanged
+seamcli in.png out.png --algo greedy --percent 75     # both sides to 75%
+seamcli --bench testdata/landscape-tower.png --out results/bench_landscape-tower.csv
+seamcli --help                                        # every option and its default
+```
+
+Algorithms: `dp` (default), `greedy`, `ek` (graph cut, Edmonds-Karp), `dinic`. Seam carving only shrinks, so targets must be between 1 and the current size.
+Exit codes: 0 success, 1 runtime error (for example an unreadable image), 2 bad command line.
+
+`--bench` removes `--seams` (20) vertical seams from scaled copies of the image (`--scales`, default 0.125, 0.25, 0.5, 1) with each algorithm in `--algos`, `--repeats` (3) times, and writes the median run as CSV:
+
+| Column | Meaning |
+|--------|---------|
+| `algorithm` | `dp`, `greedy`, `ek` or `dinic` |
+| `width`, `height` | image size at that scale, before removing seams |
+| `seams` | vertical seams removed (at most width - 1) |
+| `ms` | median wall time of the run: energy map + seam finding + removal |
+| `find_ms` | the seam-finding part of that run |
+| `total_cost` | sum of the seam costs of every removed seam |
+
+Algorithms that are not implemented yet are skipped with a note on stderr. A run slower than `--budget-ms` (10000) is stopped, gets no row, and the algorithm's larger sizes are skipped; this keeps Edmonds-Karp from running for hours. The notes for the committed results are in `results/bench_*.log`.
+
 ## Team split (6 people)
 
 Everyone must be able to explain every part: the quiz is team-based and can lower the whole team's multiplier.
