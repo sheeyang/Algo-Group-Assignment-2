@@ -1,4 +1,5 @@
 build/
+build-c3/
 out/
 cmake-build-*/
 *.exe
