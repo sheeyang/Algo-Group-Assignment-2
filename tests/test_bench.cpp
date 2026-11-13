@@ -159,12 +159,24 @@ TEST_CASE("run_benchmark reports every algorithm as a row or a skip, never crash
 
 TEST_CASE("run_benchmark: exceeding the time budget skips the larger sizes") {
     std::vector<std::string> skipped;
-    // A budget of 1 nanosecond: every run is over it, so only the smallest size is measured.
-    auto rows = run_benchmark(random_image(20, 16, 9), {Algorithm::DP}, {1.0, 0.5}, 2, 3, 1e-6, &skipped);
+    // A budget of 1 nanosecond: every run is over it. With one seam the run is still complete, so
+    // the smallest size gets a row, and the larger size is skipped.
+    auto rows = run_benchmark(random_image(20, 16, 9), {Algorithm::DP}, {1.0, 0.5}, 1, 3, 1e-6, &skipped);
     REQUIRE(rows.size() == 1);
     CHECK(rows[0].width == 10);
     REQUIRE(skipped.size() == 1);
     CHECK(starts_with(skipped[0], "dp skipped at 20x16"));
+}
+
+TEST_CASE("run_benchmark: a run over the time budget is stopped early and gets no row") {
+    std::vector<std::string> skipped;
+    // Over budget after the first of 4 seams: the run stops, so there is no full measurement.
+    auto rows = run_benchmark(random_image(20, 16, 9), {Algorithm::DP}, {1.0, 0.5}, 4, 3, 1e-6, &skipped);
+    CHECK(rows.empty());
+    REQUIRE(skipped.size() == 2);
+    CHECK(starts_with(skipped[0], "dp stopped at 10x8"));
+    CHECK(skipped[0].find("after 1 of 4 seams") != std::string::npos);
+    CHECK(starts_with(skipped[1], "dp skipped at 20x16"));
 }
 
 TEST_CASE("run_benchmark rejects bad arguments") {

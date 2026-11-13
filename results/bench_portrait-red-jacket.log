@@ -1,0 +1,6 @@
+benchmarking testdata/portrait-red-jacket.png (800x533), 20 seams, 3 repeats...
+note: dinic skipped: graph cut (Dinic) not implemented
+note: ek stopped at 200x133: over the 10000 ms budget after 4 of 20 seams (10388.8 ms)
+note: ek skipped at 400x267: a smaller size exceeded the time budget
+note: ek skipped at 800x533: a smaller size exceeded the time budget
+9 rows written to results/bench_portrait-red-jacket.csv

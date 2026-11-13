@@ -35,9 +35,11 @@ Image scale_image(const Image& img, double scale);
 // median run. Only vertical seams are removed, so every algorithm does exactly the same amount of work;
 // horizontal seams cost the same after the transpose.
 //
-// An algorithm that throws std::logic_error (not implemented yet) is skipped, not fatal. If
-// budget_ms > 0, a run slower than budget_ms makes the larger scales of that algorithm be skipped
-// too (Edmonds-Karp becomes impractical on big images). Each skip is described in *skipped when
+// An algorithm that throws std::logic_error (not implemented yet) is skipped, not fatal.
+// If budget_ms > 0, Edmonds-Karp and other slow algorithms are kept in check: a run that takes
+// longer than budget_ms is stopped after the current seam and gets no row (the note says how many
+// seams it managed in what time), and the larger scales of that algorithm are skipped. A run over
+// budget that still finished all its seams keeps its row. Each skip is described in *skipped when
 // it is given.
 //
 // Throws invalid_argument for an empty image or algorithm list, a scale outside (0, 1],

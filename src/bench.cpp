@@ -75,11 +75,13 @@ Seam find(const EnergyMap& e, Algorithm a) {
 
 struct Run {
     double ms = 0, find_ms = 0, cost = 0;
+    int done = 0;  // seams removed; less than requested when the run was stopped by the budget
 };
 
 // One timed run: remove `seams` vertical seams from `start`. This is the vertical half of the
 // resize loop (resize.cpp), written out so the seam-finding time can be measured on its own.
-Run run_once(const Image& start, Algorithm a, int seams) {
+// With budget_ms > 0 the run stops early once it has taken longer than that.
+Run run_once(const Image& start, Algorithm a, int seams, double budget_ms) {
     Run r;
     const Clock::time_point t0 = Clock::now();
     Image cur = start;
@@ -90,6 +92,8 @@ Run run_once(const Image& start, Algorithm a, int seams) {
         r.find_ms += ms_since(f0);
         r.cost += seam_cost(e, s);  // O(height); negligible next to the energy map
         cur = remove_vertical_seam(cur, s);
+        ++r.done;
+        if (budget_ms > 0 && k + 1 < seams && ms_since(t0) > budget_ms) break;
     }
     r.ms = ms_since(t0);
     return r;
@@ -141,7 +145,7 @@ std::vector<BenchRow> run_benchmark(const Image& img, const std::vector<Algorith
             std::vector<Run> runs;
             try {
                 for (int i = 0; i < repeats; ++i) {
-                    runs.push_back(run_once(scaled, a, n));
+                    runs.push_back(run_once(scaled, a, n, budget_ms));
                     if (budget_ms > 0 && runs.back().ms > budget_ms) {
                         over_budget.insert(a);  // stop repeating; larger sizes are skipped
                         break;
@@ -155,6 +159,17 @@ std::vector<BenchRow> run_benchmark(const Image& img, const std::vector<Algorith
                 // The stubs of unimplemented seam finders throw a plain std::logic_error.
                 unavailable.insert(a);
                 note(name + " skipped: " + ex.what());
+                continue;
+            }
+
+            // A run cut short by the budget is not a measurement of `n` seams, so it gets no row.
+            // The note keeps its numbers, so the time per seam can still be quoted.
+            if (runs.back().done < n) {
+                std::ostringstream msg;
+                msg << name << " stopped at " << size_str(scaled) << ": over the " << budget_ms
+                    << " ms budget after " << runs.back().done << " of " << n << " seams ("
+                    << runs.back().ms << " ms)";
+                note(msg.str());
                 continue;
             }
 
