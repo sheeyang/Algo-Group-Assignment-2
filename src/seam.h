@@ -21,11 +21,20 @@ Seam find_seam_greedy(const EnergyMap& e);          // local row-by-row choice
 Seam find_seam_graphcut_ek(const EnergyMap& e);     // min s-t cut, Edmonds-Karp
 Seam find_seam_graphcut_dinic(const EnergyMap& e);  // min s-t cut, Dinic
 
+// A solver must finish max-flow and leave the residual graph in its argument;
+// seam extraction uses those updated capacities, rather than the return value.
 using MaxFlowFn = long long (*)(FlowGraph&, int, int);
-// Shared network and seam extraction for EK and Dinic. Energies must be finite
-// and nonnegative; capacities are round(energy * 1000), so arbitrary doubles
-// are optimised to that precision. Integer-valued energies are represented exactly
-// within the supported capacity range.
+
+// Find a minimum-cost vertical seam using the supplied EK or Dinic solver.
+// Returns one column per row, with adjacent columns differing by at most one.
+// Does not modify e. Energies must be finite and nonnegative; capacities are
+// round(energy * 1000), so arbitrary doubles are optimised to that precision.
+// Integer-valued energies are represented exactly within the supported range.
+// Tied minima may produce different positions from DP. Throws invalid_argument
+// for empty/inconsistent maps, invalid energies, or a null solver; throws
+// overflow_error when node indices or capacities exceed the supported range.
+// Network construction and extraction take O(W*H) time and storage, in addition
+// to the supplied solver's cost. Horizontal seams use a transposed input map.
 Seam find_seam_graphcut(const EnergyMap& e, MaxFlowFn maxflow);
 
 // Returns a copy of img with the vertical seam removed (one column narrower).
