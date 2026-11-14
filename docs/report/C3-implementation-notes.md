@@ -82,8 +82,6 @@ Run the built tests from the repository root:
 .\build-c3\tests\seam_tests.exe
 ```
 
-The tiny generated CLI input is available in the ignored build directory:
-
-```powershell
-.\build-c3\cli\seamcli.exe build-c3/ek-input.bmp build-c3/ek-output.png 4 3 ek
-```
+The temporary input and outputs used for that smoke test were removed during
+cleanup. For a reproducible photo test and CLI example, see
+[`testdata/c3/README.md`](../../testdata/c3/README.md).
