@@ -1,2 +1,7 @@
 add_executable(seamcli main.cpp)
 target_link_libraries(seamcli PRIVATE seamlib)
+if(MSVC)
+  target_compile_options(seamcli PRIVATE /W4)
+else()
+  target_compile_options(seamcli PRIVATE -Wall -Wextra -Wpedantic)
+endif()
