@@ -1,2 +1,0 @@
-/usr/bin/ar qc libseamlib.a CMakeFiles/seamlib.dir/energy.cpp.o CMakeFiles/seamlib.dir/image.cpp.o CMakeFiles/seamlib.dir/maxflow.cpp.o CMakeFiles/seamlib.dir/resize.cpp.o CMakeFiles/seamlib.dir/seam_dp.cpp.o CMakeFiles/seamlib.dir/seam_dp_opt.cpp.o CMakeFiles/seamlib.dir/seam_graphcut.cpp.o CMakeFiles/seamlib.dir/seam_graphcut_dinic.cpp.o CMakeFiles/seamlib.dir/seam_greedy.cpp.o CMakeFiles/seamlib.dir/visualize.cpp.o
-/usr/bin/ranlib libseamlib.a
