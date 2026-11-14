@@ -16,12 +16,15 @@ endif()
 option(SEAM_BUILD_GUI "Build the Dear ImGui / ImPlot frontend (needs network on first configure)" OFF)
 option(SEAM_BUILD_TESTS "Build unit tests" ON)
 
+find_package(Threads REQUIRED)
+
 add_subdirectory(src)
 add_subdirectory(cli)
 
 if(SEAM_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
+  add_subdirectory(bench)
 endif()
 
 if(SEAM_BUILD_GUI)
