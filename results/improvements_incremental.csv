@@ -1,0 +1,7 @@
+size,width,height,seams,mode,energy_ms_per_seam,dp_ms_per_seam,remove_ms_per_seam,total_ms_per_seam,speedup_vs_full,identical_result
+small,256,192,40,full_recompute,0.509216,0.0366447,0.10696,0.654333,1,1
+small,256,192,40,incremental,0.0473614,0.0370945,0.108833,0.195995,3.33852,1
+medium,1024,768,20,full_recompute,9.53529,0.912269,2.02871,12.4913,1,1
+medium,1024,768,20,incremental,1.20906,0.789513,1.97033,3.98283,3.13629,1
+large,2048,1536,6,full_recompute,39.1213,6.03037,8.25266,53.9064,1,1
+large,2048,1536,6,incremental,12.3662,5.61935,8.329,26.5125,2.03325,1

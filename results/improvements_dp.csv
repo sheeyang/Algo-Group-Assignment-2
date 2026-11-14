@@ -1,0 +1,7 @@
+size,width,height,variant,ms_per_seam_search,speedup_vs_baseline,same_seam_as_baseline
+small,256,192,baseline_full_double_table,0.03604,1,1
+small,256,192,lowmem_2rows_int8_dirs,0.048037,0.750255,1
+medium,1024,768,baseline_full_double_table,0.723801,1,1
+medium,1024,768,lowmem_2rows_int8_dirs,0.615317,1.17631,1
+large,2048,1536,baseline_full_double_table,4.47931,1,1
+large,2048,1536,lowmem_2rows_int8_dirs,2.78322,1.6094,1

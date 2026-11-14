@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']          # a version tag such as v1.0 also builds and publishes a release
   pull_request:
 
 jobs:
@@ -20,3 +21,80 @@ jobs:
         run: cmake --build build --config Release
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
+
+      # Smoke test: run the real CLI on an image from testdata/ and check what it produced.
+      - name: Smoke test (seamcli)
+        shell: bash
+        run: |
+          if [ -f build/cli/seamcli ]; then BIN=build/cli/seamcli; else BIN=build/cli/Release/seamcli.exe; fi
+          "$BIN" testdata/landscape-tower.png smoke_out.png 640 430 dp --steps smoke_steps
+          python3 - <<'PY'
+          import os, struct, sys
+          with open("smoke_out.png", "rb") as f:
+              header = f.read(24)
+          w, h = struct.unpack(">II", header[16:24])   # PNG width/height live in the IHDR chunk
+          if (w, h) != (640, 430):
+              sys.exit(f"smoke test failed: output is {w}x{h}, expected 640x430")
+          for name in ("step_0001.png", "overview.png"):
+              if not os.path.exists(os.path.join("smoke_steps", name)):
+                  sys.exit(f"smoke test failed: smoke_steps/{name} was not written")
+          print("smoke test passed: 640x430, step frames and overview written")
+          PY
+
+      # Artifacts: the binary for each OS, plus a sample of its output.
+      - name: Upload seamcli binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: seamcli-${{ matrix.os }}
+          path: |
+            build/cli/seamcli
+            build/cli/Release/seamcli.exe
+          if-no-files-found: error
+      - name: Upload smoke-test output
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-output-${{ matrix.os }}
+          path: |
+            smoke_out.png
+            smoke_steps/overview.png
+      - name: Upload test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log-${{ matrix.os }}
+          path: build/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore
+
+  # Optional GUI build. Separate job so a GUI failure is easy to spot, and it never turns the
+  # whole workflow red (continue-on-error).
+  gui:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GUI system libraries
+        run: sudo apt-get update && sudo apt-get install -y xorg-dev libgl1-mesa-dev
+      - name: Configure (GUI on)
+        run: cmake -S . -B build-gui -DCMAKE_BUILD_TYPE=Release -DSEAM_BUILD_GUI=ON
+      - name: Build GUI
+        run: cmake --build build-gui --parallel
+
+  # Stretch: when a version tag is pushed, attach both binaries to a GitHub Release.
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Collect binaries
+        run: |
+          mkdir release
+          cp "$(find artifacts/seamcli-ubuntu-latest -type f | head -1)" release/seamcli-linux
+          cp "$(find artifacts/seamcli-windows-latest -type f | head -1)" release/seamcli-windows.exe
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
