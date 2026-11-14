@@ -1,3 +1,5 @@
+[![CI](https://github.com/sheeyang/Algo-Group-Assignment-2/actions/workflows/ci.yml/badge.svg)](https://github.com/sheeyang/Algo-Group-Assignment-2/actions/workflows/ci.yml)
+
 # Seam Carving (Algorithms Assignment 2)
 
 Content-aware image shrinking in C++17 with three seam finders: dynamic programming, greedy, and graph cut (Edmonds-Karp and Dinic).
@@ -12,6 +14,7 @@ Vocabulary lives in [GLOSSARY.md](GLOSSARY.md); design decisions in [docs/adr/](
 | `gui/` | `seamgui`: Dear ImGui + ImPlot frontend (bonus) |
 | `docs/tasks/` | one file per coding task: what to do, deliverables, acceptance checks |
 | `tests/` | doctest unit tests, linked against `seamlib` only |
+| `bench/` | benchmark programs for the 5d improvements; they write `results/improvements_*.csv` |
 | `third_party/` | vendored single headers (stb, doctest) |
 | `docs/` | assignment PDFs, ADRs, report drafts (`docs/report/`), AI usage log |
 
