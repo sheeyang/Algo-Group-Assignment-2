@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -16,6 +18,7 @@
 
 #include "bench.h"
 #include "resize.h"
+#include "visualize.h"
 
 namespace {
 
@@ -34,6 +37,7 @@ const char* kUsage =
     "  --height H       target height in pixels, 1..current (default: unchanged)\n"
     "  --percent P      shrink both sides to P% of the original (0 < P <= 100);\n"
     "                   cannot be combined with --width or --height\n"
+    "  --steps DIR      write seam frames and overview.png to DIR\n"
     "\n"
     "benchmark options (remove vertical seams from scaled copies of <image>):\n"
     "  --out FILE       write the CSV to FILE (default: standard output)\n"
@@ -107,7 +111,7 @@ struct Args {
 Args parse(int argc, char** argv) {
     static const std::vector<std::string> known = {"--algo",  "--width",  "--height", "--percent",
                                                    "--bench", "--out",    "--algos",  "--scales",
-                                                   "--seams", "--repeats", "--budget-ms"};
+                                                   "--seams", "--repeats", "--budget-ms", "--steps"};
     Args a;
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
@@ -173,7 +177,22 @@ int run_resize(const Args& a) {
                          std::to_string(in.width) + "x" + std::to_string(in.height) + " (seam carving only shrinks)");
 
     const auto t0 = std::chrono::steady_clock::now();
-    const seam::Image out = seam::resize(in, w, h, algo);
+    seam::Image out;
+    if (!a.has("--steps") || a.opts.at("--steps").empty()) {
+        out = seam::resize(in, w, h, algo);
+    } else {
+        const std::filesystem::path steps_dir(a.opts.at("--steps"));
+        std::filesystem::create_directories(steps_dir);
+        seam::SeamTracker tracker(in.width, in.height);
+        int n = 0;
+        out = seam::resize(in, w, h, algo, [&](const seam::Image& before, const seam::Seam& s, bool vertical) {
+            char name[32];
+            std::snprintf(name, sizeof name, "step_%04d.png", ++n);
+            seam::save_image(seam::draw_seam(before, s, vertical), (steps_dir / name).string());
+            tracker.record(s, vertical);
+        });
+        seam::save_image(tracker.overview(in), (steps_dir / "overview.png").string());
+    }
     const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
     seam::save_image(out, p[1]);
     std::cout << in.width << "x" << in.height << " -> " << out.width << "x" << out.height << " ("
@@ -182,7 +201,7 @@ int run_resize(const Args& a) {
 }
 
 int run_bench(const Args& a) {
-    reject(a, {"--algo", "--width", "--height", "--percent"}, "with --bench");
+    reject(a, {"--algo", "--width", "--height", "--percent", "--steps"}, "with --bench");
     if (!a.positional.empty()) throw UsageError("--bench takes no other positional arguments");
 
     std::vector<seam::Algorithm> algos = {seam::Algorithm::DP, seam::Algorithm::Greedy, seam::Algorithm::GraphCutEK,

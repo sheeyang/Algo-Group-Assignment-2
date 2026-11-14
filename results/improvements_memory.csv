@@ -1,0 +1,7 @@
+size,width,height,variant,peak_heap_bytes,peak_heap_MB,theory_dp_bytes
+small,256,192,baseline_full_double_table,394000,0.375748,393216
+small,256,192,lowmem_2rows_int8_dirs,54040,0.0515366,53248
+medium,1024,768,baseline_full_double_table,6294544,6.00294,6291456
+medium,1024,768,lowmem_2rows_int8_dirs,805912,0.768578,802816
+large,2048,1536,baseline_full_double_table,25171984,24.0059,25165824
+large,2048,1536,lowmem_2rows_int8_dirs,3184664,3.03713,3178496

@@ -55,4 +55,225 @@ The brief asks: "do we need to maintain the entire DP Table?, does multi-threadi
 
 ## Draft
 
+
+**Algorithms Assignment 2**
+
+| Team Members | SIT ID |
+|----------|----------|
+| Tan Wei Jun | 2401179 |
+| Lee Zhe An | 2401481 |
+| Dayton Ng Zhi Jie | 2400624 |
+| Chew Shee Yang | 2400693 |
+| Jarrel Tay Wee Han | 2401506 |
+| Yap Zhi Kai | 2401674 |
+
+**Date:** 14/11/2026
+
+**Group:** 6
+
+---
+
+R1
+
+R2
+
+R3
+
+R4
+
+## 5c Comparison with Greedy Algorithms, Graph Cut Algorithms
+
+| | **DP** | **Greedy** | **Graph cut (Edmonds–Karp)** | **Graph cut (Dinic)** |
+|---|---|---|---|---|
+| Optimal seam? | **Yes**, global minimum | **No**, local choices only | **Yes**, min cut equals min seam cost | **Yes** in theory, not yet measured |
+| Time per seam | $O(mn)$ | $O(m)$ search, plus $O(mn)$ energy and removal | $O(VE^2)$ worst case | $O(V^2E)$ worst case |
+| Space | $O(mn)$ | $O(mn)$, image only | $O(mn)$, large constants (graph) | $O(mn)$ |
+| Measured speed (100×67, 20 seams) | ≈ 0.2 ms/seam | ≈ 0.2 ms/seam | ≈ 312 ms/seam | not available |
+| Measured speed (800×533, 20 seams) | ≈ 12.7 ms/seam | ≈ 12.1 ms/seam | not run (over time budget) | not available |
+| Seam cost vs DP (see 3.2) | 1.00× | 1.18× to 1.66× | 1.00× at 100×67 | not available |
+| Visual quality | TODO(from R1 figures) | TODO(from R2 figures: visible distortion on ... ) | same seams as DP when costs tie | not available |
+| Use when | default choice | speed matters more than quality, small shrink | constraints or forward energy are needed, or to teach the min-cut view | as EK, when it is faster and implemented |
+
+### Optimal environment for each algorithm
+
+- **DP:** Should be the default choice in most situations. It is optimal, simple, with a complexity of O(mn)
+- **Greedy:** Only worthwhile under situations where search speed is a more important factor than quality. Its seam search is cheaper than DP's (0.54 ms vs 20.1 ms at 800x533) but total time per seam is almost the same as energy computation and removal dominate. As a result, the cost penalty is large and is not compensated for sufficiently.
+- **Graph cut:** Ideal for situations where min-cut flexibility is needed. It is much slower than both DP and Greedy at 100x67 seam removal at 312 ms/seam vs 0.2 ms/seam.
+
+### Conclusions and lessons learnt
+
+- **Global optimum matters:** 
+
+## 5d Improvements
+---
+
+**DP Table**
+The DP table M[i][j] holds the cheapest cost of reaching pixel (i, j) from the top.
+To compute row i, only row i - 1 is needed, so the costs need just 2 rows.
+
+The seam itself is different. After the last row, we walk back up and need to know
+which of the three pixels above each step came from, which is why a direction
+(-1, 0 or +1) is stored for every cell. Those fit in 1 byte instead of an 8-byte double.
+
+- **Memory:** DP structures are about 7.3-7.9x smaller. Space is still O(WH) as the directions 
+  are still an HxW table.
+- **Speed:** DP search is up to 1.6x faster on large images and about 0.75x its original speed on
+  small images. Overall, for the whole program it makes a minor difference, around
+  0.94 - 1.03x as DP makes up a small part of the time.
+
+### Incremental Energy
+
+After removing a seam, a pixel's energy only changes if its 3x3 neighbourhood
+touched the removed pixels. That is about 6 pixels per row. Everything else
+retains its old energy, just shifted 1 column left.
+
+Per-seam time dropped by 3.3x, 3.1x and 2.0x on small, medium and large 
+images respectively, and the gain shrinks on larger images occurs 
+as the copy of the whole energy map is still O(WH), so the recompute is cheap 
+but the copy did not. The overall bound stays at O(WH).
+
+### Multi-threading
+
+There are two places to split work across threads.
+
+- **Energy, by rows:** Each row can be computed independently so it speeds up by 
+  2.2-2.7x at 8 threads on medium and large images. On the small image, it did not help because
+  starting threads cost more than the 0.5ms of work.
+- **DP, by cells within a row:** Unfortunately, DP becomes significantly slower as a result of multi-threading.
+  Row i needs the finished row i-1, so all threads must wait for each other after every row
+  (a barrier). This barrier costs about 21µs at 2 threads while one row's work
+  is only 0.2-1.8µs. So threads spend nearly all their time waiting and the DP becomes
+  13x to 1200x slower.
+
+The limit on the pipeline overall is Amdahl's law: only the energy portion
+is parallel 69% of the time, so unlimited threads can only give at most about 3.2x.
+
+### Improvements Take-away
+
+- **Do we need the whole DP table?** No. Two cost rows and a 1-byte direction
+  per cell are enough. This saves memory but there are no significant changes to speed.
+- **Does multi-threading help?** For the energy rows on larger images, yes. For the DP,
+  no, as each row depends on the previous one.
+
+## Step-by-Step Visualization
+
+The goal of the visualization is to make every seam visible, both as an overview picture of all seams,
+as well as per-step visualization.
+
+### Step frames
+
+resize() calls a callback before every removal, giving it the current image and the seam
+it is about to remove. --steps utilizes this callback to paint the seam red and save the picture.
+Frame 1 is the full 800x533 image with seam 1 drawn, frame 2 is the 799-wide image with seam 2, and
+so on.
+
+### All-seams overview
+
+In each step frame, the seam is drawn in red. For the all-seams overview, vertical seams (from top to bottom) are red
+while the horizontal seams (from left to right) are colored cyan.
+
+Each seam is found on an image that has already shrunk. For example, seam 50's column numbers refer to the image as it was after 49 removals, not the original. Hence, Seam 50's coordinates cannot be painted onto the original photo, unless we use an index map.
+
+- Keep a table the same size as the current image. Each entry stores the original position of that pixel.
+- When a seam is removed, look up each removed pixel in the table. That gives its original position
+  and we can mark that an original pixel was removed at step k.
+- Lastly, delete those entries from the table, which mimics the same way the image shrinks
+
+Example: 5 original pixels
+
+[0, 1, 2, 3, 4]
+
+Step 1: Remove pixel at position 2
+
+[0, 1, 3, 4]
+
+Step 2: Remove pixel at position 2 again
+
+[0, 1, 4]
+
+By the end of the operation, every original pixel has been either kept or removed,
+and removed pixels are indicated as red or cyan (vertical or horizontal seams) on the original image
+under the file overview.png.
+
+| Original (800x533) | Step 1 (vertical seam) | Step 10 (horizontal seam) | Step 50 (horizontal seam) |
+|---|---|---|---|
+| ![Original image](figures/original.png) | ![Step 1](figures/step_0001.png) | ![Step 10](figures/step_0010.png) | ![Step 50](figures/step_0050.png) |
+
+
+| All seams on the original image | Result (640x430) |
+|---|---|
+| ![All seams](figures/all_seams_overview.png) | ![Result (640x430)](figures/result.png) |
+
+
+### Rendering each step
+
+The GUI stores the seams and rebuilds frame k by replaying the first k-1 removals on the original
+(`render_step`, `replay`).
+
+### Testing
+
+Test images store their own coordinates in the pixel colours (red = x, green = y). Hence, a seam pixel
+in any shrunk image tells the test which original pixel it is, and the test checks if the tracker agrees.
+It also checks that no two seams share a pixel.
+
+### Discussion
+
+**Index map**
+- Time: Recording a seam requires a rebuild of the map which is of O(WH) per seam.
+  That would be the same order as removing the seam from the image itself, so it adds a constant factor.
+- Memory: Requires two tables of 4-byte integers, which are the current index map and the removal-order table.
+  For 800x533, it evaluates to around 1.7 MB per table, 3.4 MB in total. 
+
+**Frames**
+- Each frame of the image is around 800 x 533 x 3 bytes = 1.28 MB. All 263 frames will take up to
+  336 MB on an upper bound as frames will gradually shrink.
+- Storing only the seams will only take up around 0.6 MB for this image.
+- Rebuilding frame k is O(k.WH) where k is the step number. This can be reduced by replaying from a checkpoint instead from restarting right from the original image.
+
+**Limitations**
+- The overview is unable to show the order in which seams were removed, only that they were vertical or horizontal.
+- Rebuilding a step from scratch gets slower for late steps.
+
+**Possible improvement**
+- Modifying the color of the overview seams by their removal step using lighter to darker colors could help somewhat identify the order of each seam. 
+
+## CI / CD
+
+CI has been implemented to help automatically build and test code every time something has been
+pushed or when a pull request is opened. This helps catch broken code before merges into main and
+by testing it on multiple OSes (Ubuntu, Windows), it helps catch OS-specific bugs.
+
+[![CI](https://github.com/sheeyang/Algo-Group-Assignment-2/actions/workflows/ci.yml/badge.svg)](https://github.com/sheeyang/Algo-Group-Assignment-2/actions/workflows/ci.yml)
+
+ci.yml has 3 primary jobs.
+- **build-test:** Runs twice for Ubuntu and Windows. It builds in Release, runs all tests, a smoke test, 
+  and uploads files. This helps identify problems which may only appear with one of the OSes.
+- **gui:** Installs the Linux GUI libraries and builds with `-DSEAM_BUILD_GUI=ON`.
+- **release:** When a version tag is pushed, it will attach the binaries to a GitHub Release.
+
+| CI Green Run | CI Red Run |
+|---|---|
+| ![CI run with all jobs passing](figures/ci_green_run.png) | ![CI run with an incorrect check added into a file](figures/ci_red_run.png) |
+
+### Smoke Test
+
+After passing the tests, the real seamcli will run on testdata/landscape-tower.png, ask for 640x430,
+and check that the output file is 640x430 and the step frames and overview exist. 
+
+### Artifacts
+
+After each run, Github will keep the seamcli program for each OS and the smoke-test images. 
+On failure, it will keep the test log.
+
+### Discussion
+
+The workflow has been configured to catch a variety of possible errors along the way.
+The unit tests catch individual functions, while the smoke test runs the seamcli on
+a test image to ensure that the output has the expected size and that the step frames and
+overview are generated. Running on both Ubuntu and Windows also helps catch
+potential compiler problems.
+
+Currently, there are some potential flaws with the workflow. The release job has not been run thus far, as it requires a version tag to be pushed. The gui job is also allowed to fail without failing the workflow as it only builds the GUI and does not run any tests. There is also no build caching.
+
+
 (Write here. Suggested headings: `## Front matter`, `## Improvements`, `## Bonus`, `## Comparison and conclusion`, `## AI usage declaration`)

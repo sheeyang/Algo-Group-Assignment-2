@@ -1,0 +1,16 @@
+size,width,height,seams,config,ms_per_seam,speedup_vs_baseline,identical_result
+small,256,192,40,baseline,0.660735,1,1
+small,256,192,40,lowmem,0.7051,0.93708,1
+small,256,192,40,incremental,0.214907,3.07452,1
+small,256,192,40,incremental+lowmem,0.210604,3.13733,1
+small,256,192,40,energy_threads2,0.718393,0.919741,1
+medium,1024,768,20,baseline,12.1405,1,1
+medium,1024,768,20,lowmem,11.9919,1.01239,1
+medium,1024,768,20,incremental,3.90666,3.10764,1
+medium,1024,768,20,incremental+lowmem,3.91696,3.09946,1
+medium,1024,768,20,energy_threads2,9.22908,1.31546,1
+large,2048,1536,6,baseline,52.5967,1,1
+large,2048,1536,6,lowmem,51.0509,1.03028,1
+large,2048,1536,6,incremental,25.6613,2.04965,1
+large,2048,1536,6,incremental+lowmem,24.4226,2.15361,1
+large,2048,1536,6,energy_threads2,39.6441,1.32672,1
