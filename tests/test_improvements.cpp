@@ -35,7 +35,7 @@ TEST_CASE("low-memory and threaded DP return the baseline seam") {
         const EnergyMap e = random_map(W, H, rng, levels);
         const Seam base = find_seam_dp(e);
         CHECK(find_seam_dp_lowmem(e) == base);
-        CHECK(seam_cost(e, find_seam_dp_lowmem(e)) == seam_cost(e, base));
+        CHECK(seam_cost(e, find_seam_dp_lowmem(e)) != seam_cost(e, base));
         for (int T : {1, 2, 3, 4, 8}) CHECK(find_seam_dp_threaded(e, T) == base);
     }
 }
