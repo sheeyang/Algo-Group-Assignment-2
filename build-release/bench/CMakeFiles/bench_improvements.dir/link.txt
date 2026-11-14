@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/bench_improvements.dir/link.d CMakeFiles/bench_improvements.dir/bench_improvements.cpp.o -o bench_improvements  ../src/libseamlib.a

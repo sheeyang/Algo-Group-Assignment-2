@@ -1,0 +1,1 @@
+/usr/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/seamcli.dir/link.d CMakeFiles/seamcli.dir/main.cpp.o -o seamcli  ../src/libseamlib.a

@@ -1,0 +1,5 @@
+add_executable(bench_improvements bench_improvements.cpp)
+target_link_libraries(bench_improvements PRIVATE seamlib)
+
+add_executable(bench_combined bench_combined.cpp)
+target_link_libraries(bench_combined PRIVATE seamlib)
