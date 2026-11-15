@@ -14,3 +14,20 @@ seamcli testdata/<image>.png out/fig/<image>-<algo>-<pct>.png --algo <dp|greedy>
 
 The panels were then laid out and labelled with a short Pillow script (not kept in the repo; it only arranges
 the seamcli outputs, it does no seam carving). Matching numbers: `results/bench_<image>.csv`.
+
+## `gui-*` (C5, for R5)
+
+Clean screenshots captured by Jarrel from the running Windows Release GUI on
+2026-11-15 using `testdata/landscape-tower.png`. All four supplied PNGs are
+preserved without conversion and replace the earlier computer-control captures:
+
+- `gui-main.png`: DP resize from 800 x 533 to 600 x 533; clean screenshot supplied by Jarrel, preserved without conversion.
+- `gui-progress.png`: a mixed-direction DP resize toward 400 x 266, captured at
+  263 of 667 seams (39%), with progress and cancellation controls visible while
+  the last completed 600 x 533 result remains on screen.
+- `gui-seams.png`: all 200 vertical seams from the 600 x 533 result, mapped onto the original; clean screenshot supplied by Jarrel, preserved without conversion.
+- `gui-benchmark.png`: clean screenshot supplied by Jarrel of the shared benchmark panel with DP and greedy, four scales,
+  10 vertical seams and 3 repeats. The corresponding exported rows are in
+  `results/gui-benchmark.csv`; these are demonstration measurements from this machine.
+
+The GUI code and one-minute demo walkthrough are in `gui/README.md`.
