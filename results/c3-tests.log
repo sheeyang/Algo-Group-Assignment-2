@@ -1,0 +1,31 @@
+﻿UpdateCTestConfiguration  from :C:/Users/Zhi Kai/Github/Algo-Group-Assignment-2/build/release/DartConfiguration.tcl
+Test project C:/Users/Zhi Kai/Github/Algo-Group-Assignment-2/build/release
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: seam_tests
+
+1: Test command: "C:\Users\Zhi Kai\Github\Algo-Group-Assignment-2\build\release\tests\seam_tests.exe"
+1: Working Directory: C:/Users/Zhi Kai/Github/Algo-Group-Assignment-2/build/release/tests
+1: Test timeout computed to be: 10000000
+1: [doctest] doctest version is "2.4.11"
+1: [doctest] run with "--help" for options
+1: ===============================================================================
+1: C:\Users\Zhi Kai\Github\Algo-Group-Assignment-2\tests\test_greedy.cpp(156):
+1: TEST CASE:  Random maps: greedy seam is valid and its cost is never below DP
+1: 
+1: C:\Users\Zhi Kai\Github\Algo-Group-Assignment-2\tests\test_greedy.cpp(175): MESSAGE: greedy strictly worse than DP on 453 of 1000 random maps
+1: 
+1: ===============================================================================
+1: [doctest] test cases:    87 |    87 passed | 0 failed | 0 skipped
+1: [doctest] assertions: 94133 | 94133 passed | 0 failed |
+1: [doctest] Status: SUCCESS!
+1/1 Test #1: seam_tests .......................   Passed    1.55 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   1.59 sec

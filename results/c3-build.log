@@ -1,0 +1,39 @@
+﻿**********************************************************************
+** Visual Studio 2026 Developer Command Prompt v18.10.2
+** Copyright (c) 2026 Microsoft Corporation
+**********************************************************************
+[0/2] Re-checking globbed directories...
+[1/2] Cleaning all built files...
+Cleaning... 31 files.
+[0/2] Re-checking globbed directories...
+[1/32] Building CXX object src\CMakeFiles\seamlib.dir\seam_graphcut_dinic.cpp.obj
+[2/32] Building CXX object src\CMakeFiles\seamlib.dir\seam_greedy.cpp.obj
+[3/32] Building CXX object src\CMakeFiles\seamlib.dir\seam_dp.cpp.obj
+[4/32] Building CXX object src\CMakeFiles\seamlib.dir\energy.cpp.obj
+[5/32] Building CXX object src\CMakeFiles\seamlib.dir\maxflow.cpp.obj
+[6/32] Building CXX object src\CMakeFiles\seamlib.dir\seam_graphcut.cpp.obj
+[7/32] Building CXX object src\CMakeFiles\seamlib.dir\visualize.cpp.obj
+[8/32] Building CXX object src\CMakeFiles\seamlib.dir\resize.cpp.obj
+[9/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_bench.cpp.obj
+[10/32] Building CXX object src\CMakeFiles\seamlib.dir\image.cpp.obj
+[11/32] Building CXX object src\CMakeFiles\seamlib.dir\seam_dp_opt.cpp.obj
+[12/32] Building CXX object src\CMakeFiles\seamlib.dir\bench.cpp.obj
+[13/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_dp.cpp.obj
+[14/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_energy.cpp.obj
+[15/32] Building CXX object cli\CMakeFiles\seamcli.dir\main.cpp.obj
+[16/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_graphcut_photo.cpp.obj
+[17/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_improvements.cpp.obj
+[18/32] Linking CXX static library src\seamlib.lib
+[19/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_graphcut.cpp.obj
+[20/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_image.cpp.obj
+[21/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_greedy.cpp.obj
+[22/32] Linking CXX executable cli\seamcli.exe
+[23/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_maxflow.cpp.obj
+[24/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_resize.cpp.obj
+[25/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_visualize.cpp.obj
+[26/32] Building CXX object bench\CMakeFiles\bench_combined.dir\bench_combined.cpp.obj
+[27/32] Linking CXX executable bench\bench_combined.exe
+[28/32] Building CXX object bench\CMakeFiles\bench_improvements.dir\bench_improvements.cpp.obj
+[29/32] Linking CXX executable bench\bench_improvements.exe
+[30/32] Building CXX object tests\CMakeFiles\seam_tests.dir\test_main.cpp.obj
+[31/32] Linking CXX executable tests\seam_tests.exe
