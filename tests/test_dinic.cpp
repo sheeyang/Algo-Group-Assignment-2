@@ -69,6 +69,36 @@ TEST_CASE("Dinic returns zero for an unreachable sink") {
     CHECK(reachable_from(g, 0) == std::vector<bool>{true, true, false});
 }
 
+TEST_CASE("Dinic measures level phases separately from path augmentations") {
+    FlowGraph g(4);
+    g.add_edge(0, 3, 1);  // first phase: the direct path
+    g.add_edge(0, 1, 2);
+    g.add_edge(1, 3, 2);  // second phase: a longer path
+    g.add_edge(0, 2, 3);
+    g.add_edge(2, 3, 3);  // same second phase, another augmentation
+    FlowGraph reference = g;
+    MaxFlowStats stats;
+    CHECK(dinic(g, 0, 3, &stats) == 6);
+    CHECK(stats.phases == 2);
+    CHECK(stats.augmentations == 3);
+    CHECK(dinic(reference, 0, 3) == 6);
+    for (size_t i = 0; i < g.edges.size(); ++i)
+        CHECK(g.edges[i].cap == reference.edges[i].cap);
+    CHECK(dinic(g, 0, 3, &stats) == 0);
+    CHECK(stats.phases == 0);
+    CHECK(stats.augmentations == 0);
+}
+
+TEST_CASE("Dinic traverses a 100000-node path without recursive stack growth") {
+    const int nodes = 100000;
+    FlowGraph g(nodes);
+    for (int i = 0; i + 1 < nodes; ++i) g.add_edge(i, i + 1, 1);
+    MaxFlowStats stats;
+    CHECK(dinic(g, 0, nodes - 1, &stats) == 1);
+    CHECK(stats.phases == 1);
+    CHECK(stats.augmentations == 1);
+}
+
 TEST_CASE("Dinic rejects invalid arguments and flow overflow") {
     FlowGraph g(2);
     CHECK_THROWS_AS(dinic(g, -1, 1), std::out_of_range);

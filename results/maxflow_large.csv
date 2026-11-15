@@ -1,0 +1,3 @@
+image,algorithm,width,height,time_ms,solver_ms,phases,augmentations,seam_cost,dp_reference_cost,cost_difference,repeats,notes
+landscape-tower-nearest-1000x700,dp,1000,700,2.125600000,0.000000000,0,0,7967.598000000,7967.598000000,0.000000000,1,measured
+landscape-tower-nearest-1000x700,dinic,1000,700,109748.915100000,109025.882100000,572,156400,7967.598000000,7967.598000000,0.000000000,1,measured
