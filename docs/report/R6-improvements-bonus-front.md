@@ -83,26 +83,36 @@ R4
 
 ## 5c Comparison with Greedy Algorithms, Graph Cut Algorithms
 
-| | **DP** | **Greedy** | **Graph cut (Edmonds–Karp)** | **Graph cut (Dinic)** |
-|---|---|---|---|---|
-| Optimal seam? | **Yes**, global minimum | **No**, local choices only | **Yes**, min cut equals min seam cost | **Yes** in theory, not yet measured |
-| Time per seam | $O(mn)$ | $O(m)$ search, plus $O(mn)$ energy and removal | $O(VE^2)$ worst case | $O(V^2E)$ worst case |
-| Space | $O(mn)$ | $O(mn)$, image only | $O(mn)$, large constants (graph) | $O(mn)$ |
-| Measured speed (100×67, 20 seams) | ≈ 0.2 ms/seam | ≈ 0.2 ms/seam | ≈ 312 ms/seam | not available |
-| Measured speed (800×533, 20 seams) | ≈ 12.7 ms/seam | ≈ 12.1 ms/seam | not run (over time budget) | not available |
-| Seam cost vs DP (see 3.2) | 1.00× | 1.18× to 1.66× | 1.00× at 100×67 | not available |
-| Visual quality | TODO(from R1 figures) | TODO(from R2 figures: visible distortion on ... ) | same seams as DP when costs tie | not available |
-| Use when | default choice | speed matters more than quality, small shrink | constraints or forward energy are needed, or to teach the min-cut view | as EK, when it is faster and implemented |
+**Image Used:** 'landscape-tower.png', scaled down to 3 sizes (100x67, 200x133, 400x267).
 
-### Optimal environment for each algorithm
+**Search Time:** Time taken, in milliseconds, for one search for the cheapest seam on the first energy map.
+**Seam Cost:** The total energy of the pixels a seam passes through, which measures how much visible detail the seam removes. The lower this cost is, the less visible distortion there is.
 
-- **DP:** Should be the default choice in most situations. It is optimal, simple, with a complexity of O(mn)
-- **Greedy:** Only worthwhile under situations where search speed is a more important factor than quality. Its seam search is cheaper than DP's (0.54 ms vs 20.1 ms at 800x533) but total time per seam is almost the same as energy computation and removal dominate. As a result, the cost penalty is large and is not compensated for sufficiently.
-- **Graph cut:** Ideal for situations where min-cut flexibility is needed. It is much slower than both DP and Greedy at 100x67 seam removal at 312 ms/seam vs 0.2 ms/seam.
+| Size | DP search (ms) | Greedy search (ms) | Graph cut (EK) search (ms) | Graph cut (Dinic) search (ms) | EK vs Dinic |
+|---|---|---|---|---|---|
+| 100×67 | 0.0069 | 0.0007 | 285.6 | 24.6 | 11.6× |
+| 200×133 | 0.034 | 0.0013 | 4,849 | 323.7 | 15.0× |
+| 400×267 | 0.127 | 0.0035 | 93,284 | 1,784 | 52.3× |
 
-### Conclusions and lessons learnt
+| Size | DP cost | Greedy cost | Greedy vs DP | Graph cut (EK) cost | Graph cut (Dinic) cost |
+|---|---|---|---|---|---|
+| 100×67 | 3,486 | 4,133 | 1.19× | 3,486 | 3,486 |
+| 200×133 | 4,644 | 8,614 | 1.85× | 4,644 | 4,644 |
+| 400×267 | 7,501 | 14,076 | 1.88× | 7,501 | 7,501 |
 
-- **Global optimum matters:** 
+
+**Observations**
+
+- **DP is the best choice for seam cutting**: While DP does not have the shortest search time out of all 4 of the algorithms tested (Greedy searches faster), it has the second best search time while maintaining same cost as EK and Dinic.
+- **Greedy cost has the highest cost**: Initially at 100x67, Greedy only had a cost of 4133, about 1.19x that of DP and the graph cut algorithms. However, this gap widens as it increases to about 1.85x on 200x133, and lastly 1.88x on 400x267.
+- **Graph cut algorithms are slow:** Both the EK and Dinic graph cut algorithms took much longer per search than non-graph cut algorithms. For example, at 200x133, a search with EK and Dinic reached search times of 4849 ms and 323.7 ms respectively, while DP and Greedy searches took 0.034 ms and 0.0013 ms.
+- **Dinic is faster than EK:** From 100x67 to 400x267, Dinic's search time comes to 24.6 ms, 323.7 ms and 1784 ms to EK's 285.6, 4849 ms, and 93,284 ms. The performance gap widens with each larger image dimension, going from 11.6x to 15.0x to 52.3x.
+
+### Conclusions and lessons learned
+
+**Global optimum matters:** While Greedy is the fastest search, its seams cost 1.19x to 1.88x more than the optimum, so it removes more visible detail.
+**Improvements proposed do not outweigh algorithm choice:** While improvements such as incremental energy and threading can help improve the operation time, it will only improve it by a constant factor and not change the O(WxH) bound. 
+**Limitations:** All tabulated results are derived from the same image, with a single run and the only 3 sizes (100x67, 200x133, 400x267).
 
 ## 5d Improvements
 ---
