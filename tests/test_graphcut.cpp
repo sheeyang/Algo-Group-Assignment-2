@@ -9,7 +9,7 @@
 
 using namespace seam;
 
-static void check_against_dp(const EnergyMap& e) {
+static void check_against_dp(const EnergyMap& e, bool exact = false) {
     const Seam s = find_seam_graphcut_ek(e);
     REQUIRE(s.size() == size_t(e.height));
     for (int y = 0; y < e.height; ++y) {
@@ -17,7 +17,10 @@ static void check_against_dp(const EnergyMap& e) {
         REQUIRE(s[y] < e.width);
         if (y > 0) CHECK(std::abs(s[y] - s[y - 1]) <= 1);
     }
-    CHECK(seam_cost(e, s) == doctest::Approx(seam_cost(e, find_seam_dp(e))));
+    const double actual = seam_cost(e, s);
+    const double expected = seam_cost(e, find_seam_dp(e));
+    if (exact) CHECK(actual == expected);  // integer-valued maps have exact sums
+    else CHECK(actual == doctest::Approx(expected));
 }
 
 TEST_CASE("EK graph cut finds the hand-checked seam") {
@@ -47,7 +50,7 @@ TEST_CASE("EK graph cut agrees with DP on 500 random integer energy maps") {
         EnergyMap e{w, h, std::vector<double>(size_t(w) * h)};
         for (double& v : e.e) v = double(rng() % (trial % 2 ? 30 : 3));
         INFO("trial=" << trial << " width=" << w << " height=" << h);
-        check_against_dp(e);
+        check_against_dp(e, true);
     }
 }
 

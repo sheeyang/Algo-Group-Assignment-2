@@ -64,8 +64,10 @@ replace its seam wrapper with `return find_seam_graphcut(e, dinic);`.
 Copy a graph before comparing flow solvers because both mutate capacities.
 The existing CMake globs include new source and test files automatically.
 
-Image overlays, timing measurements, and final report figures remain to be
-collected. These notes describe the implementation, not measured performance.
+The completed report is in [`R3-graph-cut.md`](R3-graph-cut.md). Two labelled
+DP/EK comparisons, native seam overlays and the network diagram are in
+[`figures/c3/`](figures/c3/README.md). Their reproduction instructions and
+measurement CSV descriptions are documented there for C4/R4 and R6 to reuse.
 
 ## Local verification (13 November 2026)
 
@@ -85,3 +87,29 @@ Run the built tests from the repository root:
 The temporary input and outputs used for that smoke test were removed during
 cleanup. For a reproducible photo test and CLI example, see
 [`testdata/c3/README.md`](../../testdata/c3/README.md).
+
+## Completion verification (16 November 2026)
+
+The current Release suite passes 87 test cases and 94,133 assertions. The 500
+random integer-map comparisons now explicitly use exact cost equality.
+Doctest uses its supported standard-header configuration, avoiding the C5285
+warning from forward declarations inside `std` on newer MSVC versions.
+The clean build and test logs are in `results/c3-build.log` and
+`results/c3-tests.log`.
+
+Report evidence covers two 64x43 inputs resized to 54x43. All twenty EK seam
+costs agree with DP on the same current image within 1e-6. Median timings use
+five fresh runs per algorithm and image. See R3 for the measured values and
+the distinction between per-seam agreement and independently evolving resize
+sequences.
+
+The shared interface was merged into main before this report completion.
+Publishing an early stub before EK was finished was not done as a separate
+historical step; C4 now has the complete interface and reference solver.
+
+For the two-minute presentation: explain the energy-cost objective, show the
+virtual-column network and why INF constraints form a connected seam, trace
+one BFS/bottleneck/residual update, then show the comparison figures and one
+timing row. Be able to explain why tied seams can differ and why the slower
+EK solver is still correct. Final team report assembly and the presentation
+recording belong to the team's submission workflow.
