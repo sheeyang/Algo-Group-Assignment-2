@@ -55,6 +55,56 @@ Exit codes: 0 success, 1 runtime error (for example an unreadable image), 2 bad 
 
 Algorithms that are not implemented yet are skipped with a note on stderr. A run slower than `--budget-ms` (10000) is stopped, gets no row, and the algorithm's larger sizes are skipped; this keeps Edmonds-Karp from running for hours. The notes for the committed results are in `results/bench_*.log`.
 
+## Desktop app (`seamgui`)
+
+The optional Dear ImGui + ImPlot frontend loads an image, resizes it on a worker thread,
+compares the original and result, replays removed seams, and plots/export benchmarks.
+First configuration downloads GLFW 3.4, Dear ImGui v1.91.9b and ImPlot v0.17.
+An OpenGL 3.3 driver is required. The default headless build is unchanged.
+
+Windows with Visual Studio (run from the repository root):
+
+```powershell
+cmake -S . -B build-gui -DSEAM_BUILD_GUI=ON
+cmake --build build-gui --config Release --parallel
+ctest --test-dir build-gui -C Release --output-on-failure
+.\build-gui\gui\Release\seamgui.exe testdata/landscape-tower.png
+```
+
+Windows with MSYS2 MinGW (its `mingw64/bin` must be on `PATH`):
+
+```powershell
+cmake -S . -B build-gui -G "MinGW Makefiles" -DSEAM_BUILD_GUI=ON
+cmake --build build-gui --parallel
+ctest --test-dir build-gui --output-on-failure
+.\build-gui\gui\seamgui.exe testdata/landscape-tower.png
+```
+
+Linux (Ubuntu/Debian):
+
+```sh
+sudo apt install build-essential cmake xorg-dev libgl1-mesa-dev
+cmake -S . -B build-gui -DSEAM_BUILD_GUI=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build-gui --parallel
+ctest --test-dir build-gui --output-on-failure
+./build-gui/gui/seamgui testdata/landscape-tower.png
+```
+
+Use a different build directory if one already contains another compiler's configuration.
+Load an image by path or drag-and-drop; choose dimensions and an algorithm, then press
+**Resize image**. Every run starts from the original. **Export image** saves the last
+completed result. Output folders are created as needed; an existing output file is replaced.
+The **Removed seams** tab offers playback, a step slider and an overview of all removed seams.
+The **Benchmarks** tab runs the shared benchmark function, plots time against input pixel
+count and exports exactly those measurements as CSV.
+
+Cancellation waits for the current seam (resize) or algorithm (benchmark) to finish;
+an in-flight max-flow call cannot be interrupted. Closing the app requests cancellation
+and waits safely. Missing algorithms, including the current Dinic placeholder, appear
+as errors or benchmark skip notes. GUI resize time includes seam tracking and the extra
+energy calculation used to report seam cost; use benchmark measurements for comparisons.
+See [`gui/README.md`](gui/README.md) for the code walkthrough and a one-minute demo.
+
 ## Team split (6 people)
 
 Everyone must be able to explain every part: the quiz is team-based and can lower the whole team's multiplier.
