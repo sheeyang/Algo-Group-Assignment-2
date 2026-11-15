@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <vector>
 
 namespace seam {
@@ -36,6 +37,17 @@ struct FlowGraph {
 // can leave earlier augmentations applied. Worst-case time: O(V * E^2).
 long long edmonds_karp(FlowGraph& g, int s, int t);
 long long dinic(FlowGraph& g, int s, int t);  // implemented by C4
+
+// Optional measurements of one solver call, reset at entry. A Dinic phase is
+// one successful level-graph BFS followed by its blocking flow; augmentations
+// count individual s-t path pushes in either solver. The final unsuccessful
+// BFS is not a phase. Three-argument calls keep the existing MaxFlowFn contract.
+struct MaxFlowStats {
+    std::uint64_t phases = 0;
+    std::uint64_t augmentations = 0;
+};
+long long edmonds_karp(FlowGraph& g, int s, int t, MaxFlowStats* stats);
+long long dinic(FlowGraph& g, int s, int t, MaxFlowStats* stats);
 
 // Return seen[v] == true exactly when v is reachable from s along edges with
 // positive residual capacity. Does not modify g. This describes a minimum cut

@@ -52,9 +52,14 @@ bool build_levels(const FlowGraph& g, int s, int t, std::vector<int>& level,
 // can be as long as the image is tall, so a recursive DFS would risk a stack
 // overflow on a real image (see docs/tasks/C4-dinic.md).
 long long dinic(FlowGraph& g, int s, int t) {
+    return dinic(g, s, t, nullptr);
+}
+
+long long dinic(FlowGraph& g, int s, int t, MaxFlowStats* stats) {
     check_node(g, s);
     check_node(g, t);
     if (s == t) throw std::invalid_argument("dinic: source equals sink");
+    if (stats) *stats = {};
 
     const int n = static_cast<int>(g.adj.size());
     long long flow = 0;
@@ -65,6 +70,7 @@ long long dinic(FlowGraph& g, int s, int t) {
     path.reserve(n);
 
     while (build_levels(g, s, t, level, bfs_queue)) {
+        if (stats) ++stats->phases;
         std::fill(iter.begin(), iter.end(), 0);
         path.clear();
         int u = s;
@@ -89,6 +95,7 @@ long long dinic(FlowGraph& g, int s, int t) {
                     if (g.edges[i].cap == 0 && k < cut_to) cut_to = k;
                 }
                 flow += amount;
+                if (stats) ++stats->augmentations;
                 // Resume the DFS from the tail of the first saturated edge.
                 path.resize(cut_to);
                 u = (cut_to == 0) ? s : g.edges[path.back()].to;

@@ -53,8 +53,9 @@ Resize cancellation is checked between seams. Benchmark cancellation is checked
 between algorithms, preserving complete benchmark rows. Neither can interrupt a
 single running max-flow call. A cancelled resize leaves the last completed result
 intact; a stopped benchmark keeps completed measurements. Closing requests cancellation
-and joins the worker before destroying its state. Dinic can be selected now: its
-current not-implemented exception is displayed safely, and benchmark runs skip it.
+and joins the worker before destroying its state. DP, greedy, Edmonds-Karp and
+Dinic are available for both resizing and benchmarks. Use small inputs for graph
+cut demonstrations because a single max-flow call can take a long time.
 
 ## One-minute demo
 

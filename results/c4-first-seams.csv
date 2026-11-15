@@ -1,0 +1,3 @@
+image,width,height,dp_cost,dinic_cost,positions_equal,final_pixels_equal
+portrait,64,43,92.8440000000007,92.8440000000009,0,0
+building,64,43,826.712,826.712,1,1

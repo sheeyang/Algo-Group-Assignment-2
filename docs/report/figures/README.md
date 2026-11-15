@@ -1,5 +1,11 @@
 # Report figures
 
+## C4: DP versus Dinic
+
+The labelled comparisons, native seam/result panels, per-step correctness
+checks and reproducible max-flow benchmark instructions are in
+[`c4/README.md`](c4/README.md).
+
 ## `greedy-vs-dp-<image>.jpg` (C2, for R2)
 
 Each figure shows the original test image, then the DP and greedy results side by side at 90%, 70% and 50% of

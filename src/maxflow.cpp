@@ -55,9 +55,14 @@ std::vector<bool> reachable_from(const FlowGraph& g, int s) {
 }
 
 long long edmonds_karp(FlowGraph& g, int s, int t) {
+    return edmonds_karp(g, s, t, nullptr);
+}
+
+long long edmonds_karp(FlowGraph& g, int s, int t, MaxFlowStats* stats) {
     check_node(g, s);
     check_node(g, t);
     if (s == t) throw std::invalid_argument("edmonds_karp: source equals sink");
+    if (stats) *stats = {};
     long long flow = 0;
     // parent[v] stores the incoming EDGE index, not the previous node. This
     // distinguishes parallel edges and lets us update the exact edge used.
@@ -98,6 +103,7 @@ long long edmonds_karp(FlowGraph& g, int s, int t) {
             g.edges[i ^ 1].cap += amount;
         }
         flow += amount;
+        if (stats) ++stats->augmentations;
     }
 }
 

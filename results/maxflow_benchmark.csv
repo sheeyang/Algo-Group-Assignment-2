@@ -1,31 +1,22 @@
-algorithm,width,height,time_ms,phases_or_augmentations,notes
-dp,16,16,20.31,1,Optimal O(WH) dynamic programming
-dinic,16,16,22.56,6,Level graph blocking flow
-edmonds_karp,16,16,31.34,96,BFS augmenting paths
-dp,24,24,21.92,1,Optimal O(WH) dynamic programming
-dinic,24,24,25.21,7,Level graph blocking flow
-edmonds_karp,24,24,40.89,165,BFS augmenting paths
-dp,32,32,21.54,1,Optimal O(WH) dynamic programming
-dinic,32,32,33.91,7,Level graph blocking flow
-edmonds_karp,32,32,87.47,240,BFS augmenting paths
-dp,48,48,23.00,1,Optimal O(WH) dynamic programming
-dinic,48,48,47.32,7,Level graph blocking flow
-edmonds_karp,48,48,379.83,402,BFS augmenting paths
-dp,64,64,31.64,1,Optimal O(WH) dynamic programming
-dinic,64,64,143.79,7,Level graph blocking flow
-edmonds_karp,64,64,1391.78,576,BFS augmenting paths
-dp,80,80,31.44,1,Optimal O(WH) dynamic programming
-dinic,80,80,300.56,7,Level graph blocking flow
-edmonds_karp,80,80,4176.67,759,Impractical for multi-seam (>4s/seam)
-dp,100,100,35.30,1,Optimal O(WH) dynamic programming
-dinic,100,100,579.31,7,Level graph blocking flow
-edmonds_karp,100,100,11502.44,997,Impractical for multi-seam (>4s/seam)
-dp,128,128,47.36,1,Optimal O(WH) dynamic programming
-dinic,128,128,1204.22,7,Level graph blocking flow
-edmonds_karp,128,128,TIMEOUT,>5000,Impractical (exceeds timeout threshold)
-dp,160,160,50.54,1,Optimal O(WH) dynamic programming
-dinic,160,160,2488.23,7,Level graph blocking flow
-edmonds_karp,160,160,TIMEOUT,>5000,Impractical (exceeds timeout threshold)
-dp,200,200,77.37,1,Optimal O(WH) dynamic programming
-dinic,200,200,7735.26,7,Level graph blocking flow
-edmonds_karp,200,200,TIMEOUT,>5000,Impractical (exceeds timeout threshold)
+image,algorithm,width,height,time_ms,solver_ms,phases,augmentations,seam_cost,dp_reference_cost,cost_difference,repeats,notes
+landscape-tower,dp,32,21,0.001500000,0.000000000,0,0,1323.836000000,1323.836000000,0.000000000,3,measured
+landscape-tower,dinic,32,21,2.237200000,1.229100000,17,231,1323.836000000,1323.836000000,0.000000000,3,measured
+landscape-tower,ek,32,21,5.025400000,4.390300000,0,231,1323.836000000,1323.836000000,0.000000000,3,measured
+landscape-tower,dp,64,43,0.004500000,0.000000000,0,0,1458.034000000,1458.034000000,0.000000000,3,measured
+landscape-tower,dinic,64,43,8.841300000,6.491100000,26,721,1458.034000000,1458.034000000,0.000000000,3,measured
+landscape-tower,ek,64,43,93.370400000,90.928000000,0,721,1458.034000000,1458.034000000,0.000000000,3,measured
+landscape-tower,dp,96,64,0.017200000,0.000000000,0,0,1689.020000000,1689.020000000,0.000000000,3,measured
+landscape-tower,dinic,96,64,55.958300000,50.511900000,69,1962,1689.020000000,1689.020000000,0.000000000,3,measured
+landscape-tower,ek,96,64,574.213200000,569.549100000,0,1962,1689.020000000,1689.020000000,0.000000000,3,measured
+landscape-tower,dp,128,85,0.067800000,0.000000000,0,0,1880.370000000,1880.370000000,0.000000000,3,measured
+landscape-tower,dinic,128,85,124.019100000,115.443000000,89,3356,1880.370000000,1880.370000000,0.000000000,3,measured
+landscape-tower,ek,128,85,1897.885100000,1889.345900000,0,3356,1880.370000000,1880.370000000,0.000000000,3,measured
+landscape-tower,dp,200,133,0.077700000,0.000000000,0,0,2267.574000000,2267.574000000,0.000000000,3,measured
+landscape-tower,dinic,200,133,601.741500000,575.256300000,169,7618,2267.574000000,2267.574000000,0.000000000,3,measured
+landscape-tower,ek,200,133,13592.585300000,13573.328700000,0,7618,2267.574000000,2267.574000000,0.000000000,1,measured; exceeded budget; larger sizes skipped
+landscape-tower,dp,400,267,0.150700000,0.000000000,0,0,3684.064000000,3684.064000000,0.000000000,3,measured
+landscape-tower,dinic,400,267,5598.428100000,5514.657500000,247,28567,3684.064000000,3684.064000000,0.000000000,1,measured; exceeded budget; larger sizes skipped
+landscape-tower,ek,400,267,,,,,,,,,skipped; smaller size exceeded 5000 ms
+landscape-tower,dp,800,533,1.350300000,0.000000000,0,0,7067.658000000,7067.658000000,0.000000000,3,measured
+landscape-tower,dinic,800,533,,,,,,,,,skipped; smaller size exceeded 5000 ms
+landscape-tower,ek,800,533,,,,,,,,,skipped; smaller size exceeded 5000 ms

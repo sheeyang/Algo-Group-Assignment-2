@@ -59,8 +59,8 @@ Each original edge also has a reverse residual edge. Storage is O(V+E).
 Edmonds-Karp takes O(V E^2) worst-case time: O((WH)^3) on this network.
 DP takes O(WH) per seam, so use small inputs for EK benchmarks.
 
-C4 can implement `dinic(FlowGraph&, int, int)` in `maxflow_dinic.cpp` and
-replace its seam wrapper with `return find_seam_graphcut(e, dinic);`.
+C4 implements `dinic(FlowGraph&, int, int)` in `maxflow_dinic.cpp`; its seam
+wrapper calls `return find_seam_graphcut(e, dinic);`.
 Copy a graph before comparing flow solvers because both mutate capacities.
 The existing CMake globs include new source and test files automatically.
 
