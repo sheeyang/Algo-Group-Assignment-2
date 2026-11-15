@@ -1,0 +1,89 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="735" viewBox="0 0 1160 735"><rect width="1160" height="735" fill="white"/><defs><marker id="arrow" markerWidth="7" markerHeight="7" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="context-stroke"/></marker></defs><g font-family="Arial,sans-serif">
+<text x="25" y="35" font-size="24">Minimum-cut network: four rows, four real columns and one virtual column</text><text x="25" y="65" font-size="17">Blue nodes = source side S; grey nodes = sink side T. Red forward edges cross the minimum cut.</text>
+<path d='M55 355 L120 160 M960 160 L1100 355' stroke='#777' fill='none' marker-end='url(#arrow)'/>
+<path d='M322 180 Q240 217 158 180' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M325 165 L155 285' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M522 180 Q440 217 358 180' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M525 165 L355 285' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M722 180 Q640 217 558 180' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M725 165 L555 285' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M922 180 Q840 217 758 180' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M925 165 L755 285' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M55 355 L120 290 M960 290 L1100 355' stroke='#777' fill='none' marker-end='url(#arrow)'/>
+<path d='M322 310 Q240 347 158 310' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M325 295 L155 155' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M325 295 L155 415' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M522 310 Q440 347 358 310' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M525 295 L355 155' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M525 295 L355 415' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M722 310 Q640 347 558 310' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M725 295 L555 155' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M725 295 L555 415' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M922 310 Q840 347 758 310' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M925 295 L755 155' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M925 295 L755 415' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M55 355 L120 420 M960 420 L1100 355' stroke='#777' fill='none' marker-end='url(#arrow)'/>
+<path d='M322 440 Q240 477 158 440' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M325 425 L155 285' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M325 425 L155 545' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M522 440 Q440 477 358 440' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M525 425 L355 285' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M525 425 L355 545' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M722 440 Q640 477 558 440' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M725 425 L555 285' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M725 425 L555 545' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M922 440 Q840 477 758 440' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M925 425 L755 285' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M925 425 L755 545' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M55 355 L120 550 M960 550 L1100 355' stroke='#777' fill='none' marker-end='url(#arrow)'/>
+<path d='M322 570 Q240 607 158 570' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M325 555 L155 415' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M522 570 Q440 607 358 570' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M525 555 L355 415' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M722 570 Q640 607 558 570' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M725 555 L555 415' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M922 570 Q840 607 758 570' stroke='#39759d' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M925 555 L755 415' stroke='#39759d' opacity='.36' fill='none' stroke-dasharray='5 3' marker-end='url(#arrow)'/>
+<path d='M163 160 L317 160' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='215' y='148' font-size='16' fill='#222'>9000</text>
+<path d='M363 160 L517 160' stroke='#d21c1c' stroke-width='2' marker-end='url(#arrow)'/><text x='415' y='148' font-size='16' fill='#d21c1c'>1000</text>
+<path d='M563 160 L717 160' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='615' y='148' font-size='16' fill='#222'>9000</text>
+<path d='M763 160 L917 160' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='815' y='148' font-size='16' fill='#222'>9000</text>
+<circle cx='140' cy='160' r='22' fill='#c9e8ff' stroke='#333'/><text x='135' y='166' font-size='18'>0</text>
+<circle cx='340' cy='160' r='22' fill='#c9e8ff' stroke='#333'/><text x='335' y='166' font-size='18'>1</text>
+<circle cx='540' cy='160' r='22' fill='#eeeeee' stroke='#333'/><text x='535' y='166' font-size='18'>2</text>
+<circle cx='740' cy='160' r='22' fill='#eeeeee' stroke='#333'/><text x='735' y='166' font-size='18'>3</text>
+<circle cx='940' cy='160' r='22' fill='#eeeeee' stroke='#333'/><text x='935' y='166' font-size='18'>v</text>
+<text x='80' y='125' font-size='16'>row 0</text>
+<path d='M163 290 L317 290' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='215' y='278' font-size='16' fill='#222'>9000</text>
+<path d='M363 290 L517 290' stroke='#d21c1c' stroke-width='2' marker-end='url(#arrow)'/><text x='415' y='278' font-size='16' fill='#d21c1c'>1000</text>
+<path d='M563 290 L717 290' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='615' y='278' font-size='16' fill='#222'>9000</text>
+<path d='M763 290 L917 290' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='815' y='278' font-size='16' fill='#222'>9000</text>
+<circle cx='140' cy='290' r='22' fill='#c9e8ff' stroke='#333'/><text x='135' y='296' font-size='18'>0</text>
+<circle cx='340' cy='290' r='22' fill='#c9e8ff' stroke='#333'/><text x='335' y='296' font-size='18'>1</text>
+<circle cx='540' cy='290' r='22' fill='#eeeeee' stroke='#333'/><text x='535' y='296' font-size='18'>2</text>
+<circle cx='740' cy='290' r='22' fill='#eeeeee' stroke='#333'/><text x='735' y='296' font-size='18'>3</text>
+<circle cx='940' cy='290' r='22' fill='#eeeeee' stroke='#333'/><text x='935' y='296' font-size='18'>v</text>
+<text x='80' y='255' font-size='16'>row 1</text>
+<path d='M163 420 L317 420' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='215' y='408' font-size='16' fill='#222'>9000</text>
+<path d='M363 420 L517 420' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='415' y='408' font-size='16' fill='#222'>9000</text>
+<path d='M563 420 L717 420' stroke='#d21c1c' stroke-width='2' marker-end='url(#arrow)'/><text x='615' y='408' font-size='16' fill='#d21c1c'>1000</text>
+<path d='M763 420 L917 420' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='815' y='408' font-size='16' fill='#222'>9000</text>
+<circle cx='140' cy='420' r='22' fill='#c9e8ff' stroke='#333'/><text x='135' y='426' font-size='18'>0</text>
+<circle cx='340' cy='420' r='22' fill='#c9e8ff' stroke='#333'/><text x='335' y='426' font-size='18'>1</text>
+<circle cx='540' cy='420' r='22' fill='#c9e8ff' stroke='#333'/><text x='535' y='426' font-size='18'>2</text>
+<circle cx='740' cy='420' r='22' fill='#eeeeee' stroke='#333'/><text x='735' y='426' font-size='18'>3</text>
+<circle cx='940' cy='420' r='22' fill='#eeeeee' stroke='#333'/><text x='935' y='426' font-size='18'>v</text>
+<text x='80' y='385' font-size='16'>row 2</text>
+<path d='M163 550 L317 550' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='215' y='538' font-size='16' fill='#222'>9000</text>
+<path d='M363 550 L517 550' stroke='#d21c1c' stroke-width='2' marker-end='url(#arrow)'/><text x='415' y='538' font-size='16' fill='#d21c1c'>1000</text>
+<path d='M563 550 L717 550' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='615' y='538' font-size='16' fill='#222'>9000</text>
+<path d='M763 550 L917 550' stroke='#222' stroke-width='2' marker-end='url(#arrow)'/><text x='815' y='538' font-size='16' fill='#222'>9000</text>
+<circle cx='140' cy='550' r='22' fill='#c9e8ff' stroke='#333'/><text x='135' y='556' font-size='18'>0</text>
+<circle cx='340' cy='550' r='22' fill='#c9e8ff' stroke='#333'/><text x='335' y='556' font-size='18'>1</text>
+<circle cx='540' cy='550' r='22' fill='#eeeeee' stroke='#333'/><text x='535' y='556' font-size='18'>2</text>
+<circle cx='740' cy='550' r='22' fill='#eeeeee' stroke='#333'/><text x='735' y='556' font-size='18'>3</text>
+<circle cx='940' cy='550' r='22' fill='#eeeeee' stroke='#333'/><text x='935' y='556' font-size='18'>v</text>
+<text x='80' y='515' font-size='16'>row 3</text>
+<path d="M440 105 L440 355 L640 355 L640 485 L440 485 L440 605" fill="none" stroke="#d21c1c" stroke-width="3" stroke-dasharray="9 6"/><circle cx="35" cy="355" r="21" fill="#c9e8ff" stroke="#333"/><text x="30" y="361" font-size="20">s</text><circle cx="1120" cy="355" r="21" fill="#eee" stroke="#333"/><text x="1115" y="361" font-size="20">t</text>
+<text x="25" y="640" font-size="17">Solid horizontal edges: c = 1000e. Dashed blue backward/diagonal edges: INF.</text><text x="25" y="667" font-size="17">All source and sink edges: INF. Here sum(c) = 112000, so INF = 112001.</text><text x="25" y="694" font-size="17">Seam columns [1,1,2,1]; cut capacity = 4000; original seam cost = 4. The virtual nodes v are not pixels.</text></g></svg>
+
