@@ -110,7 +110,7 @@ it cannot be selected as the rightmost source-side pixel. In our network,
 cutting p(W-1,y) -> p(W,y) selects the last real pixel and charges its energy,
 so every column available to DP is also available to graph cut.
 
-![Four-row minimum-cut network](figures/c3/network-example.svg)
+![Four-row minimum-cut network](figures/c3/graphcut-network.png)
 
 *Figure R3.1.* The real-pixel energy grid has value 1 at columns [1,1,2,1]
 and value 9 elsewhere. This connected seam is the unique optimum. Its scaled
@@ -356,7 +356,7 @@ The cost is additional graph storage and much greater computation. The
 small-image timings support using DP for ordinary repeated seam carving and
 using EK as a reference implementation for the graph-cut approach. A slow
 large-image run is therefore a practical limitation, not evidence by itself
-that the returned seam is wrong. R4 evaluates the faster Dinic solver on the
+that the returned seam is wrong. R4 evaluates the Dinic solver on the
 same network; this section establishes the formulation and EK reference.
 
 ### References for R5

@@ -17,6 +17,9 @@ These are curated report artifacts; temporary executables stay under `build/`.
   four-column example, including virtual nodes and all INF constraints.
   Reverse residual edges are omitted for readability. The unique seam is
   [1,1,2,1]; the original energy cost is 4 and the scaled cut capacity is 4000.
+- `graphcut-network.png`: 2320x1470 raster copy of that SVG for embedding in
+  the final report. The SVG remains the editable vector source; re-export
+  the PNG if the network example is changed.
 
 Input source and downscaling details are in
 [`testdata/c3/README.md`](../../../../testdata/c3/README.md).
