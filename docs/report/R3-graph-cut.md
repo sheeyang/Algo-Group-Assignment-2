@@ -4,6 +4,13 @@
 **Works with:** R4 (Dinic and the graph cut vs DP comparison), who builds on your formulation section
 **Assignment items:** 4 (formulation and Edmonds-Karp), 5b (graph cut, EK part)
 
+**Assembly note for R6:** The report prose starts at `## Draft` below. Put the
+formulation, correctness argument and EK implementation under algorithms;
+the test and visual evidence under results; and the complexity discussion
+under item 5b. R4 can reference the shared network instead of describing it
+again. The instructions above the draft are the team's task checklist, not
+submission prose.
+
 ## What to write
 
 ### 1. The min-cut formulation (item 4)
@@ -39,6 +46,28 @@
 
 ## Draft
 
+### Scope and implemented components
+
+This section covers the graph-cut formulation and Edmonds-Karp (EK) solver
+implemented for C3. The aim is to find a minimum-cost seam using a flow
+network and verify it against the existing dynamic-programming (DP) finder.
+The image loading, Sobel energy calculation and resize loop are shared team
+components; this implementation supplies the network, EK solver and seam
+extraction. Dinic is a separate solver described in R4.
+
+| Implemented component | Role in seam finding |
+|-----------------------|----------------------|
+| `FlowGraph` and `add_edge()` in `src/maxflow.*` | Store capacities, adjacency indices and paired reverse residual edges |
+| `edmonds_karp()` in `src/maxflow.cpp` | Compute maximum flow using BFS augmenting paths |
+| `reachable_from()` in `src/maxflow.cpp` | Identify the source side of the cut after maximum flow |
+| `find_seam_graphcut()` in `src/seam_graphcut.cpp` | Build the shared network, invoke a supplied solver and extract the seam |
+| `find_seam_graphcut_ek()` in `src/seam_graphcut.cpp` | Select EK for the shared graph-cut finder |
+
+Keeping the graph independent of image data allows the solver to be tested
+on small networks with known answers. Keeping network construction separate
+from the choice of solver also lets Dinic use the same formulation and
+extraction, making the solver comparison more controlled.
+
 ### Graph cut formulation
 
 Seam carving removes a connected sequence of low-energy pixels to reduce an
@@ -47,6 +76,19 @@ at a time. For width W and height H, a seam is a sequence s[y] containing one
 column per row, with abs(s[y] - s[y-1]) <= 1. Its cost is the sum of the current
 image's Sobel energies at those pixels. After removal, energies are recomputed.
 Horizontal seams use the same finder on the transposed image.
+
+For the implemented backward-energy objective,
+
+```text
+e(x,y) = abs(Gx(x,y)) + abs(Gy(x,y))
+seam_cost(s) = sum over y of e(s[y],y)
+```
+
+Gx and Gy are the horizontal and vertical Sobel responses of the grayscale
+image. A low cost means the selected pixels have low local intensity changes;
+it does not guarantee that the algorithm understands or preserves every
+semantically important object. The requested width and height determine how
+many seams the resize loop removes.
 
 The network contains nodes p(x,y), for 0 <= x <= W and 0 <= y < H, plus a
 source and sink. Columns 0 to W-1 represent real pixels. Column W is virtual.
@@ -104,6 +146,15 @@ capacity from the source. The visited nodes give S, and the rightmost visited
 real pixel in each row gives the seam. The flow solver's returned number is
 not itself the sequence of pixels to remove.
 
+```text
+construct the network from the current energy map
+run edmonds_karp(network, source, sink)
+S = nodes reachable from source using positive residual capacity
+for each row y:
+    seam[y] = largest real column x with p(x,y) in S
+return seam
+```
+
 ### Capacity precision, ties and alternatives
 
 The solver uses integer capacities to avoid floating-point tolerance decisions
@@ -159,6 +210,26 @@ while BFS finds a residual source-to-sink path:
 return flow
 ```
 
+Each augmentation preserves a feasible flow. The bottleneck prevents any
+path edge from exceeding its remaining capacity, and adding the same amount
+along the path preserves flow conservation at intermediate nodes. Paired
+reverse edges represent cancellation of previously sent flow rather than
+additional original capacity.
+
+When no augmenting path remains, the source-reachable set S excludes the
+sink. Every original edge from S to T is saturated; otherwise its positive
+residual capacity would make its destination reachable. No original edge
+from T to S carries positive flow, because its reverse residual edge would
+also make a node in T reachable. Consequently the flow value equals the
+capacity of this cut. Since no feasible flow can exceed a cut's capacity,
+the flow and cut are optimal. Combined with the cut-to-seam correspondence,
+this establishes correctness for the integer-capacity seam objective.
+
+The shared solver module was subsequently extended with an optional
+`MaxFlowStats` overload that records EK augmentations for R4's measurements.
+The three-argument solver interface remains available, so the seam-network
+code and its `MaxFlowFn` contract are unchanged.
+
 ### Time and space complexity
 
 This implementation creates V = H(W+1)+2 nodes. There are WH finite forward
@@ -189,9 +260,11 @@ inputs, as recommended in the C3 task.
 
 ### Correctness tests
 
-The verified Release build passed all 87 test cases and 94,133 assertions on
-16 November 2026. The captured output is in
-[`results/c3-tests.log`](../../results/c3-tests.log). C3-specific checks include:
+The archived C3 Release verification run on 16 November 2026 passed all
+87 test cases and 94,133 assertions. Its output is preserved in
+[`results/c3-tests.log`](../../results/c3-tests.log). This is the count for
+that recorded run; later team integrations add further tests. The relevant
+C3 checks include:
 
 - A six-node network with known maximum flow 23 and independently summed
   cut capacity 23; a graph requiring cancellation through a reverse edge;
@@ -256,7 +329,11 @@ median run and is not an independent median.
 Sources: [`c3-benchmark-portrait.csv`](../../results/c3-benchmark-portrait.csv)
 and [`c3-benchmark-building.csv`](../../results/c3-benchmark-building.csv).
 These are local measurements, not universal speed ratios. The measurements
-show that max-flow dominates EK's time even on these small examples.
+show that graph-cut seam finding accounts for almost all of EK's total time
+even on these small examples. Here, `find_ms` includes network construction,
+max-flow and seam extraction; it does not isolate the max-flow loop. These
+MSVC measurements should not be combined into a speedup ratio with R4's
+separate compiler/build measurements.
 
 The benchmark CSVs also record cumulative costs along each algorithm's own
 removal sequence. They differ here: portrait 1130.006 (DP) versus 1130.916
@@ -266,6 +343,22 @@ future costs, and finding the cheapest current seam does not optimise the
 entire sequence of ten removals. The same-current-image checks above are the
 appropriate correctness comparison.
 
+### Discussion
+
+The implementation demonstrates that a flow-network formulation can solve
+the same current-seam minimisation problem as DP, subject to the documented
+capacity precision. The virtual column makes all real pixel columns eligible,
+and the INF constraints encode seam validity instead of checking it only
+after a cut is found. The network proof, known-flow tests and DP agreement
+checks support the correctness claim together.
+
+The cost is additional graph storage and much greater computation. The
+small-image timings support using DP for ordinary repeated seam carving and
+using EK as a reference implementation for the graph-cut approach. A slow
+large-image run is therefore a practical limitation, not evidence by itself
+that the returned seam is wrong. R4 evaluates the faster Dinic solver on the
+same network; this section establishes the formulation and EK reference.
+
 ### References for R5
 
 [1] Shai Avidan and Ariel Shamir. *Seam Carving for Content-Aware Image
@@ -273,7 +366,8 @@ Resizing*. ACM Transactions on Graphics, 26(3), Article 10, 2007.
 [Author report hosted by MERL](https://www.merl.com/publications/docs/TR2008-000.pdf).
 
 [2] MIT OpenCourseWare. *6.046J Design and Analysis of Algorithms, Recitation
-7: Network Flow and Matching*, 3 April 2015, pages 1-2.
+7: Network Flow and Matching*, 3 April 2015; EK analysis on pages 1-2 and
+max-flow/min-cut application on pages 4-5.
 [Edmonds-Karp analysis](https://ocw.mit.edu/courses/6-046j-design-and-analysis-of-algorithms-spring-2015/ba74f89434fc261d9366ebf136c04b52_MIT6_046JS15_Recitation7.pdf).
 
 The graph-to-seam correspondence and edge counts above are derived for our
