@@ -1,7 +1,8 @@
 # C5 code walkthrough
 
-Build/run instructions are in the root README's **Desktop app** section.
-Start from the repository root so relative paths such as `testdata/landscape-tower.png` work.
+On Windows, [open the clone in Visual Studio](../README.md#run-in-visual-studio-on-windows)
+and select `seamgui.exe` as the startup item. See the root README's
+[Desktop app section](../README.md#desktop-app-seamgui) for Linux build instructions.
 
 ## Read these files in order
 
@@ -59,7 +60,7 @@ cut demonstrations because a single max-flow call can take a long time.
 
 ## One-minute demo
 
-- **0-10 s:** Launch with `testdata/landscape-tower.png`; identify original and result panels.
+- **0-10 s:** Launch `seamgui` and drop `testdata/landscape-tower.png` into the window. Identify the original and result panels.
 - **10-25 s:** Select DP, choose 75% width with the height unchanged, and resize.
   Show the output dimensions, elapsed time and total seam cost; export the image.
 - **25-40 s:** Open **Removed seams**, play a few steps, then show the all-seams overview.

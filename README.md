@@ -18,7 +18,57 @@ Vocabulary lives in [GLOSSARY.md](GLOSSARY.md); design decisions in [docs/adr/](
 | `third_party/` | vendored single headers (stb, doctest) |
 | `docs/` | assignment PDFs, ADRs, report drafts (`docs/report/`), AI usage log |
 
-## Build and test
+## Run in Visual Studio on Windows
+
+Install the **Desktop development with C++** workload in Visual Studio 2022 or later.
+In Visual Studio Installer, make sure the workload includes **C++ CMake tools for Windows**.
+
+1. Choose **File > Open > Folder** and select the cloned folder containing `CMakeLists.txt`.
+2. On the toolbar, select **Windows Desktop (CLI + GUI)** and wait for CMake to finish.
+   The first configuration needs internet access to download the GUI libraries.
+3. In the **Startup Item** dropdown by the green Run button, select `seamgui.exe` or `seamcli.exe`.
+   Press **Ctrl+F5** to build and run. For `seamgui.exe`, drag an image from `testdata/` onto the window.
+
+To resize an image with `seamcli.exe`, select it as the startup item, then choose
+**Debug > Debug and Launch Settings**. In the generated configuration, set `currentDir`
+to the absolute path to your clone and add the arguments below for a sample resize.
+
+```json
+"currentDir": "C:/path/to/your/clone",
+"args": ["testdata/landscape-tower.png", "out.png", "640", "430", "dp"]
+```
+
+Save the launch settings and run the corresponding startup item. The sample writes `out.png`
+to your clone.
+
+## Build and test from a terminal
+
+### Windows PowerShell
+
+Run these commands from the repository root with CMake, Ninja, and a C++ toolchain
+available. If you use MSVC, open **Developer PowerShell for Visual Studio**.
+
+Build both executables with the desktop preset. The first configuration downloads
+the GUI libraries.
+
+```powershell
+cmake --preset windows-desktop
+cmake --build out/build/windows-desktop --parallel
+```
+
+Run `seamcli` to resize the sample image to 640 × 430 and save it as `out.png`.
+
+```powershell
+.\out\build\windows-desktop\cli\seamcli.exe testdata/landscape-tower.png out.png 640 430 dp
+```
+
+Run `seamgui` to open the sample image in the desktop app.
+
+```powershell
+.\out\build\windows-desktop\gui\seamgui.exe testdata/landscape-tower.png
+```
+
+### Linux
 
 ```
 cmake -S . -B build -G Ninja
@@ -26,8 +76,6 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 build/cli/seamcli in.png out.png 400 300 dp
 ```
-
-On Windows with Visual Studio, leave out `-G Ninja` and add `--config Release` to the build and `-C Release` to `ctest`; the binaries are then in `build/cli/Release/` and `build/tests/Release/`.
 
 ## Command-line tool (`seamcli`)
 
@@ -66,23 +114,8 @@ compares the original and result, replays removed seams, and plots/export benchm
 First configuration downloads GLFW 3.4, Dear ImGui v1.91.9b and ImPlot v0.17.
 An OpenGL 3.3 driver is required. The default headless build is unchanged.
 
-Windows with Visual Studio (run from the repository root):
-
-```powershell
-cmake -S . -B build-gui -DSEAM_BUILD_GUI=ON
-cmake --build build-gui --config Release --parallel
-ctest --test-dir build-gui -C Release --output-on-failure
-.\build-gui\gui\Release\seamgui.exe testdata/landscape-tower.png
-```
-
-Windows with MSYS2 MinGW (its `mingw64/bin` must be on `PATH`):
-
-```powershell
-cmake -S . -B build-gui -G "MinGW Makefiles" -DSEAM_BUILD_GUI=ON
-cmake --build build-gui --parallel
-ctest --test-dir build-gui --output-on-failure
-.\build-gui\gui\seamgui.exe testdata/landscape-tower.png
-```
+On Windows, use [Visual Studio](#run-in-visual-studio-on-windows) or the
+[Windows PowerShell](#windows-powershell) desktop preset.
 
 Linux (Ubuntu/Debian):
 
