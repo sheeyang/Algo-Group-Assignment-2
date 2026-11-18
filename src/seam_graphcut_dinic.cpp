@@ -1,12 +1,13 @@
-#include <stdexcept>
-
 #include "seam.h"
 
 namespace seam {
 
-// TODO(C4 owner): once C3 publishes find_seam_graphcut(e, maxflow_fn), this becomes a one-line
-// call with dinic(). The Dinic max-flow itself goes in maxflow_dinic.cpp.
-// See docs/tasks/C4-dinic.md.
-Seam find_seam_graphcut_dinic(const EnergyMap&) { throw std::logic_error("graph cut (Dinic) not implemented"); }
+// Same min-cut network and seam extraction as the Edmonds-Karp variant
+// (find_seam_graphcut in seam_graphcut.cpp); only the max-flow solver differs.
+// Dinic is faster on these layered networks, but by max-flow/min-cut both
+// return a seam of the same optimal cost.
+Seam find_seam_graphcut_dinic(const EnergyMap& e) {
+    return find_seam_graphcut(e, dinic);
+}
 
 }  // namespace seam

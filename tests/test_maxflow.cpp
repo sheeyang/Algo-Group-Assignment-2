@@ -74,6 +74,23 @@ TEST_CASE("Edmonds-Karp returns zero for an unreachable sink") {
     CHECK(reachable_from(g, 0) == std::vector<bool>{true, true, false});
 }
 
+TEST_CASE("Edmonds-Karp measures path augmentations and resets each call") {
+    FlowGraph g(3);
+    g.add_edge(0, 2, 1);
+    g.add_edge(0, 1, 2);
+    g.add_edge(1, 2, 2);
+    FlowGraph reference = g;
+    MaxFlowStats stats;
+    CHECK(edmonds_karp(g, 0, 2, &stats) == 3);
+    CHECK(stats.phases == 0);  // EK has no level-graph blocking-flow phases
+    CHECK(stats.augmentations == 2);
+    CHECK(edmonds_karp(reference, 0, 2) == 3);
+    for (size_t i = 0; i < g.edges.size(); ++i)
+        CHECK(g.edges[i].cap == reference.edges[i].cap);
+    CHECK(edmonds_karp(g, 0, 2, &stats) == 0);
+    CHECK(stats.augmentations == 0);
+}
+
 TEST_CASE("Flow graph rejects invalid arguments and flow overflow") {
     CHECK_THROWS_AS(FlowGraph(-1), std::invalid_argument);
     FlowGraph g(2);

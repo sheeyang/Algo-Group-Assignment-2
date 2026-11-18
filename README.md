@@ -42,6 +42,10 @@ seamcli --help                                        # every option and its def
 Algorithms: `dp` (default), `greedy`, `ek` (graph cut, Edmonds-Karp), `dinic`. Seam carving only shrinks, so targets must be between 1 and the current size.
 Exit codes: 0 success, 1 runtime error (for example an unreadable image), 2 bad command line.
 
+DP-versus-Dinic figures and the reproducible benchmark for measured Dinic phases,
+EK augmentations and first-seam timings are documented in
+[`docs/report/figures/c4/README.md`](docs/report/figures/c4/README.md).
+
 `--bench` removes `--seams` (20) vertical seams from scaled copies of the image (`--scales`, default 0.125, 0.25, 0.5, 1) with each algorithm in `--algos`, `--repeats` (3) times, and writes the median run as CSV:
 
 | Column | Meaning |
@@ -100,8 +104,8 @@ count and exports exactly those measurements as CSV.
 
 Cancellation waits for the current seam (resize) or algorithm (benchmark) to finish;
 an in-flight max-flow call cannot be interrupted. Closing the app requests cancellation
-and waits safely. Missing algorithms, including the current Dinic placeholder, appear
-as errors or benchmark skip notes. GUI resize time includes seam tracking and the extra
+and waits safely. All four algorithms, including Dinic, are available in the GUI.
+GUI resize time includes seam tracking and the extra
 energy calculation used to report seam cost; use benchmark measurements for comparisons.
 See [`gui/README.md`](gui/README.md) for the code walkthrough and a one-minute demo.
 

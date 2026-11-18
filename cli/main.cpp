@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -152,26 +153,25 @@ int run_resize(const Args& a) {
     if (a.has("--algo")) algo = to_algorithm("--algo", a.opts.at("--algo"));
 
     // Parse every number before loading the image, so command-line mistakes are reported first.
-    int w = -1, h = -1;  // -1: keep the current size
+    std::optional<int> width, height;  // omitted dimensions keep the current size
     double percent = -1;
     if (sized_by_position) {
-        w = to_int("target_w", p[2]);
-        h = to_int("target_h", p[3]);
+        width = to_int("target_w", p[2]);
+        height = to_int("target_h", p[3]);
     }
-    if (a.has("--width")) w = to_int("--width", a.opts.at("--width"));
-    if (a.has("--height")) h = to_int("--height", a.opts.at("--height"));
+    if (a.has("--width")) width = to_int("--width", a.opts.at("--width"));
+    if (a.has("--height")) height = to_int("--height", a.opts.at("--height"));
     if (a.has("--percent")) {
         percent = to_double("--percent", a.opts.at("--percent"));
         if (!(percent > 0 && percent <= 100)) throw UsageError("--percent must be in (0, 100]");
     }
 
     const seam::Image in = seam::load_image(p[0]);
+    int w = width.value_or(in.width), h = height.value_or(in.height);
     if (percent > 0) {
         w = std::max(1, int(std::lround(in.width * percent / 100)));
         h = std::max(1, int(std::lround(in.height * percent / 100)));
     }
-    if (w == -1) w = in.width;
-    if (h == -1) h = in.height;
     if (w < 1 || h < 1 || w > in.width || h > in.height)
         throw UsageError("target " + std::to_string(w) + "x" + std::to_string(h) + " must be between 1x1 and " +
                          std::to_string(in.width) + "x" + std::to_string(in.height) + " (seam carving only shrinks)");
