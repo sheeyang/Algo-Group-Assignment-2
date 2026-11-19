@@ -1,58 +1,115 @@
+/**
+ * @file maxflow.h
+ * @brief Image-independent residual network and shared max-flow interfaces.
+ * @details C3 supplies FlowGraph, Edmonds-Karp and residual reachability.
+ * C4 plugs Dinic into the same graph and seam-network contract.
+ */
 #pragma once
 #include <cstdint>
 #include <vector>
 
 namespace seam {
 
-// Directed flow network shared by Edmonds-Karp and Dinic. Nodes are numbered
-// 0..n-1. Each added edge occupies two consecutive entries in edges: the
-// forward edge and its reverse residual edge, whose initial capacity is zero.
-// Flipping the lowest bit (i ^ 1) finds the paired edge in either direction.
+/**
+ * @brief Directed graph whose edge capacities represent remaining flow capacity.
+ * @invariant Nodes are numbered from zero to adj.size()-1. Every original edge
+ * is immediately followed by its reverse residual edge; index i ^ 1 selects
+ * the partner in either direction. Reverse capacity initially equals zero.
+ * @warning Solvers mutate capacities. Copy an unsolved graph before comparing
+ * solvers, and preserve the pairing invariant when accessing public storage.
+ * @par Complexity
+ * Storage is O(V+E), including the paired reverse records.
+ */
 struct FlowGraph {
+    /** @brief One directed residual edge; its source is implicit in adjacency. */
     struct Edge {
-        int to;         // destination node
-        long long cap;  // remaining residual capacity; changed by the solver
+        int to;         ///< Destination node index.
+        long long cap;  ///< Remaining capacity, updated by the flow solver.
     };
 
-    // Create n isolated nodes. Throws invalid_argument for a negative count.
+    /**
+     * @brief Construct a graph containing isolated nodes.
+     * @param n Number of nodes, including any source and sink.
+     * @throws std::invalid_argument If n is negative.
+     * @par Complexity
+     * O(n) time and storage.
+     */
     explicit FlowGraph(int n);
 
-    // Add u -> v with nonnegative capacity and a paired v -> u residual edge.
-    // Return the forward edge's index. Parallel edges and self loops are allowed.
-    // Throws out_of_range for invalid nodes, invalid_argument for a negative
-    // capacity, or overflow_error if edge indices cannot fit in int.
+    /**
+     * @brief Add an original edge and its zero-capacity reverse residual edge.
+     * @param u Source node index.
+     * @param v Destination node index. Self loops and parallel edges are allowed.
+     * @param cap Nonnegative original capacity.
+     * @return Index of the original edge in edges; its partner is index ^ 1.
+     * @throws std::out_of_range If either node does not exist.
+     * @throws std::invalid_argument If cap is negative.
+     * @throws std::overflow_error If edge indices cannot fit in int.
+     * @par Complexity
+     * Amortised O(1) time and additional storage per call.
+     */
     int add_edge(int u, int v, long long cap);
 
-    std::vector<Edge> edges;
-    std::vector<std::vector<int>> adj;  // outgoing edge indices for each node
+    std::vector<Edge> edges;  ///< Original/reverse residual records in pairs.
+    std::vector<std::vector<int>> adj;  ///< Outgoing edge indices for each node.
 };
 
-// Push as much additional flow as possible from s to t using BFS augmenting
-// paths. On a fresh graph, the return value is the maximum flow; calling again
-// on the solved graph returns zero. Mutates g's residual capacities, so copy
-// the graph before comparing solvers. After completion, reachable_from(g, s)
-// gives the source side of a minimum cut.
-// Throws out_of_range for invalid nodes, invalid_argument when s == t, and
-// overflow_error if the returned flow would exceed long long. An overflow
-// can leave earlier augmentations applied. Worst-case time: O(V * E^2).
+/**
+ * @brief Compute additional maximum flow using BFS augmenting paths.
+ * @param[in,out] g Residual network; must retain FlowGraph's pairing invariant.
+ * @param s Source node index.
+ * @param t Sink node index, distinct from s.
+ * @return Additional flow sent during this call. For a fresh network this is
+ * the maximum flow; a second call on the solved network returns zero.
+ * @post On normal return, no residual source-to-sink path remains.
+ * @throws std::out_of_range If a terminal node does not exist.
+ * @throws std::invalid_argument If s equals t.
+ * @throws std::overflow_error If the flow total cannot fit in long long;
+ * augmentations completed before the exception remain applied.
+ * @par Complexity
+ * O(V E^2) worst-case time and O(V) auxiliary storage, excluding the graph.
+ * @see reachable_from
+ */
 long long edmonds_karp(FlowGraph& g, int s, int t);
 long long dinic(FlowGraph& g, int s, int t);  // implemented by C4
 
-// Optional measurements of one solver call, reset at entry. A Dinic phase is
-// one successful level-graph BFS followed by its blocking flow; augmentations
-// count individual s-t path pushes in either solver. The final unsuccessful
-// BFS is not a phase. Three-argument calls keep the existing MaxFlowFn contract.
+/**
+ * @brief Optional per-call solver measurements shared with C4.
+ * @details Counters reset after terminal validation. A Dinic phase is one
+ * successful level-graph BFS followed by blocking flow; its final failed BFS
+ * is not a phase. EK leaves phases at zero. Augmentations count path pushes.
+ */
 struct MaxFlowStats {
-    std::uint64_t phases = 0;
-    std::uint64_t augmentations = 0;
+    std::uint64_t phases = 0;  ///< Successful Dinic blocking-flow phases.
+    std::uint64_t augmentations = 0;  ///< Individual source-to-sink flow pushes.
 };
+/**
+ * @brief Run Edmonds-Karp with optional augmentation counting.
+ * @param[in,out] g Residual graph, mutated as in the three-argument overload.
+ * @param s Source node index.
+ * @param t Sink node index, distinct from s.
+ * @param[out] stats Optional counters; nullptr disables measurement. Resets
+ * after successful argument validation; partial counts remain on overflow.
+ * @return Additional flow sent during this call.
+ * @throws std::out_of_range If a terminal node does not exist.
+ * @throws std::invalid_argument If s equals t.
+ * @throws std::overflow_error If the flow total exceeds long long.
+ * @see edmonds_karp(FlowGraph&, int, int)
+ */
 long long edmonds_karp(FlowGraph& g, int s, int t, MaxFlowStats* stats);
 long long dinic(FlowGraph& g, int s, int t, MaxFlowStats* stats);
 
-// Return seen[v] == true exactly when v is reachable from s along edges with
-// positive residual capacity. Does not modify g. This describes a minimum cut
-// only after the flow solver has exhausted all s-to-t augmenting paths.
-// Throws out_of_range for an invalid source. Time: O(V + E).
+/**
+ * @brief Traverse the residual graph through strictly positive capacities.
+ * @param[in] g Residual network; it is not modified.
+ * @param s Starting node index.
+ * @return One flag per node: true if reachable from s, including s itself.
+ * @throws std::out_of_range If s does not exist.
+ * @note This set is the source side of a minimum cut only after max-flow has
+ * exhausted all augmenting paths to the chosen sink.
+ * @par Complexity
+ * O(V+E) time and O(V) auxiliary storage.
+ */
 std::vector<bool> reachable_from(const FlowGraph& g, int s);
 
 }  // namespace seam

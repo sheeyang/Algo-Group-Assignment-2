@@ -1,3 +1,20 @@
+<#
+.SYNOPSIS
+Build the C3 evidence driver and render DP-versus-EK report figures.
+.DESCRIPTION
+Runs c3_evidence.cpp against the existing MSVC Release seam library, then
+labels the PNG panels and writes the illustrative network SVG. Existing
+figure and CSV evidence is overwritten. The source photos are not modified.
+PowerShell uses native comment-based help; C++ APIs use Doxygen blocks.
+.PARAMETER BuildDir
+Repository-relative directory containing an already built MSVC Release
+seamlib.lib and CMakeCache.txt. Defaults to build/release.
+.EXAMPLE
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/generate-c3-evidence.ps1
+.NOTES
+Requires Windows, Visual Studio C++ tools, and System.Drawing. Errors stop
+the script; the caller's original working directory is restored on exit.
+#>
 param([string]$BuildDir = 'build/release')
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot

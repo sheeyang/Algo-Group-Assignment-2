@@ -1,3 +1,10 @@
+/**
+ * @file maxflow.cpp
+ * @brief C3 residual-graph operations and Edmonds-Karp implementation.
+ * @details BFS selects shortest augmenting paths by edge count, not energy.
+ * Bottleneck pushes preserve capacity/flow constraints. When BFS cannot reach
+ * the sink, residual reachability exposes a minimum cut for seam extraction.
+ */
 #include "maxflow.h"
 
 #include <algorithm>
@@ -7,16 +14,24 @@
 
 namespace seam {
 
+/** @brief Initialise adjacency storage after validating the node count. */
 FlowGraph::FlowGraph(int n) {
     if (n < 0) throw std::invalid_argument("FlowGraph: negative node count");
     adj.resize(n);
 }
 
+/**
+ * @brief Validate a node index before accessing adjacency storage.
+ * @param g Graph that supplies the valid node range.
+ * @param u Node index to validate.
+ * @throws std::out_of_range If u is negative or outside the graph.
+ */
 static void check_node(const FlowGraph& g, int u) {
     if (u < 0 || size_t(u) >= g.adj.size())
         throw std::out_of_range("FlowGraph: node outside graph");
 }
 
+/** @brief Append an original/reverse pair and register both adjacency indices. */
 int FlowGraph::add_edge(int u, int v, long long cap) {
     check_node(*this, u);
     check_node(*this, v);
@@ -33,6 +48,7 @@ int FlowGraph::add_edge(int u, int v, long long cap) {
     return i;
 }
 
+/** @brief Mark all nodes accessible through positive residual capacities. */
 std::vector<bool> reachable_from(const FlowGraph& g, int s) {
     check_node(g, s);
     std::vector<bool> seen(g.adj.size(), false);
@@ -54,10 +70,12 @@ std::vector<bool> reachable_from(const FlowGraph& g, int s) {
     return seen;
 }
 
+/** @brief Run the measured overload with statistics disabled. */
 long long edmonds_karp(FlowGraph& g, int s, int t) {
     return edmonds_karp(g, s, t, nullptr);
 }
 
+/** @brief Augment shortest residual paths until no additional flow is possible. */
 long long edmonds_karp(FlowGraph& g, int s, int t, MaxFlowStats* stats) {
     check_node(g, s);
     check_node(g, t);

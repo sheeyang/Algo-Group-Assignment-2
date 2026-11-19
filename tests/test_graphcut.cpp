@@ -1,3 +1,9 @@
+/**
+ * @file test_graphcut.cpp
+ * @brief C3 seam-network regression and DP-reference tests.
+ * @details Includes 500 fixed-seed integer maps, seam validity, virtual-column
+ * coverage, zero/tied energies, capacity validation and mixed-direction resize.
+ */
 #include <cmath>
 #include <limits>
 #include <random>
@@ -9,6 +15,13 @@
 
 using namespace seam;
 
+/**
+ * @brief Assert seam validity and minimum-cost agreement with DP.
+ * @param e Small energy map to solve independently with EK and DP.
+ * @param exact Use exact equality for integer maps; otherwise doctest's
+ * approximate comparison accommodates floating-point sums.
+ * @note Equal seam positions are not required when minimum costs tie.
+ */
 static void check_against_dp(const EnergyMap& e, bool exact = false) {
     const Seam s = find_seam_graphcut_ek(e);
     REQUIRE(s.size() == size_t(e.height));
@@ -23,18 +36,21 @@ static void check_against_dp(const EnergyMap& e, bool exact = false) {
     else CHECK(actual == doctest::Approx(expected));
 }
 
+/** @test EK graph cut finds the hand-checked seam. */
 TEST_CASE("EK graph cut finds the hand-checked seam") {
     EnergyMap e{3, 3, {5, 1, 0, 1, 9, 9, 5, 1, 9}};
     CHECK(find_seam_graphcut_ek(e) == Seam{1, 0, 1});
     check_against_dp(e);
 }
 
+/** @test Virtual column allows the cheapest seam in the last column. */
 TEST_CASE("Virtual column allows the cheapest seam in the last column") {
     EnergyMap e{3, 3, {9, 9, 1, 9, 9, 1, 9, 9, 1}};
     CHECK(find_seam_graphcut_ek(e) == Seam{2, 2, 2});
     check_against_dp(e);
 }
 
+/** @test EK graph cut handles tiny maps, zeros and ties. */
 TEST_CASE("EK graph cut handles tiny maps, zeros and ties") {
     check_against_dp(EnergyMap{1, 1, {42}});
     check_against_dp(EnergyMap{1, 4, {7, 3, 9, 1}});
@@ -43,6 +59,7 @@ TEST_CASE("EK graph cut handles tiny maps, zeros and ties") {
     check_against_dp(EnergyMap{4, 4, std::vector<double>(16, 5)});
 }
 
+/** @test EK graph cut agrees with DP on 500 random integer energy maps. */
 TEST_CASE("EK graph cut agrees with DP on 500 random integer energy maps") {
     std::mt19937 rng(20261113);
     for (int trial = 0; trial < 500; ++trial) {
@@ -54,12 +71,14 @@ TEST_CASE("EK graph cut agrees with DP on 500 random integer energy maps") {
     }
 }
 
+/** @test EK graph cut preserves thousandth-valued energies. */
 TEST_CASE("EK graph cut preserves thousandth-valued energies") {
     check_against_dp(EnergyMap{3, 3, {1.234, 0.125, 9.001,
                                      0.256, 9.002, 9.003,
                                      9.004, 0.111, 9.005}});
 }
 
+/** @test EK resize removes both vertical and horizontal seams. */
 TEST_CASE("EK resize removes both vertical and horizontal seams") {
     Image img(6, 5);
     for (int y = 0; y < img.height; ++y)
@@ -84,6 +103,7 @@ TEST_CASE("EK resize removes both vertical and horizontal seams") {
     CHECK(horizontal == 2);
 }
 
+/** @test EK graph cut rejects invalid maps and unsafe capacities. */
 TEST_CASE("EK graph cut rejects invalid maps and unsafe capacities") {
     CHECK_THROWS_AS(find_seam_graphcut_ek(EnergyMap{}), std::invalid_argument);
     CHECK_THROWS_AS(find_seam_graphcut_ek(EnergyMap{2, 2, {1}}), std::invalid_argument);

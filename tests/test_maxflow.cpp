@@ -1,3 +1,10 @@
+/**
+ * @file test_maxflow.cpp
+ * @brief C3 regression tests for residual storage and Edmonds-Karp.
+ * @details Covers known flow/cut values, reverse-edge cancellation, parallel
+ * edges, self loops, disconnected sinks, counters and invalid/overflow inputs.
+ * These tests isolate flow correctness from image-network construction.
+ */
 #include <limits>
 #include <stdexcept>
 
@@ -6,6 +13,7 @@
 
 using namespace seam;
 
+/** @test FlowGraph stores paired residual edges. */
 TEST_CASE("FlowGraph stores paired residual edges") {
     FlowGraph g(2);
     const int i = g.add_edge(0, 1, 7);
@@ -17,6 +25,7 @@ TEST_CASE("FlowGraph stores paired residual edges") {
     CHECK(g.adj[1] == std::vector<int>{i ^ 1});
 }
 
+/** @test Edmonds-Karp solves the textbook six-node network. */
 TEST_CASE("Edmonds-Karp solves the textbook six-node network") {
     FlowGraph g(6);
     g.add_edge(0, 1, 16);
@@ -42,6 +51,7 @@ TEST_CASE("Edmonds-Karp solves the textbook six-node network") {
     CHECK(edmonds_karp(g, 0, 5) == 0);  // no additional augmenting path
 }
 
+/** @test Edmonds-Karp can cancel an earlier flow choice. */
 TEST_CASE("Edmonds-Karp can cancel an earlier flow choice") {
     // First BFS chooses s-a-c-t. A second unit requires s-b-c-a-d-t,
     // using the reverse residual edge c-a to undo a-c.
@@ -57,6 +67,7 @@ TEST_CASE("Edmonds-Karp can cancel an earlier flow choice") {
     CHECK(g.edges[ac].cap == 1);
 }
 
+/** @test Edmonds-Karp handles parallel edges, self loops and zero capacities. */
 TEST_CASE("Edmonds-Karp handles parallel edges, self loops and zero capacities") {
     FlowGraph g(3);
     g.add_edge(0, 0, 100);
@@ -67,6 +78,7 @@ TEST_CASE("Edmonds-Karp handles parallel edges, self loops and zero capacities")
     CHECK(edmonds_karp(g, 0, 2) == 4);
 }
 
+/** @test Edmonds-Karp returns zero for an unreachable sink. */
 TEST_CASE("Edmonds-Karp returns zero for an unreachable sink") {
     FlowGraph g(3);
     g.add_edge(0, 1, 9);
@@ -74,6 +86,7 @@ TEST_CASE("Edmonds-Karp returns zero for an unreachable sink") {
     CHECK(reachable_from(g, 0) == std::vector<bool>{true, true, false});
 }
 
+/** @test Edmonds-Karp measures path augmentations and resets each call. */
 TEST_CASE("Edmonds-Karp measures path augmentations and resets each call") {
     FlowGraph g(3);
     g.add_edge(0, 2, 1);
@@ -91,6 +104,7 @@ TEST_CASE("Edmonds-Karp measures path augmentations and resets each call") {
     CHECK(stats.augmentations == 0);
 }
 
+/** @test Flow graph rejects invalid arguments and flow overflow. */
 TEST_CASE("Flow graph rejects invalid arguments and flow overflow") {
     CHECK_THROWS_AS(FlowGraph(-1), std::invalid_argument);
     FlowGraph g(2);

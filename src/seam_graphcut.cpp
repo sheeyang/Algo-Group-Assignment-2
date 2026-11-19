@@ -1,3 +1,13 @@
+/**
+ * @file seam_graphcut.cpp
+ * @brief C3 image-to-network reduction and minimum-cut seam extraction.
+ * @details Each row contains W real nodes and one virtual node. Finite
+ * rightward edges charge pixel energy; INF backward and diagonal constraints
+ * force source-side prefixes with connected endpoints. The virtual column
+ * permits selecting the last real pixel. Horizontal seams use transposition
+ * in the shared resize loop, rather than a second network implementation.
+ * @see find_seam_graphcut
+ */
 #include <cmath>
 #include <limits>
 #include <stdexcept>
@@ -6,8 +16,7 @@
 
 namespace seam {
 
-// Convert seam selection to a minimum cut, solve it, then read the seam from
-// the residual graph. The solver is injected so C4 can reuse this with Dinic.
+/** @brief Construct the constrained network, solve max-flow and read its cut. */
 Seam find_seam_graphcut(const EnergyMap& e, MaxFlowFn maxflow) {
     const int w = e.width, h = e.height;
     if (w < 1 || h < 1) throw std::invalid_argument("graph cut: empty energy map");
@@ -83,7 +92,7 @@ Seam find_seam_graphcut(const EnergyMap& e, MaxFlowFn maxflow) {
     return result;
 }
 
-// Select Edmonds-Karp while keeping network construction and extraction shared.
+/** @brief Select EK while reusing the shared network and extraction logic. */
 Seam find_seam_graphcut_ek(const EnergyMap& e) {
     return find_seam_graphcut(e, edmonds_karp);
 }

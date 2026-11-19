@@ -1,5 +1,10 @@
-// Standalone report-evidence generator, compiled by generate-c3-evidence.ps1.
-// Uses seamlib's actual finders, visualisation and benchmark code.
+/**
+ * @file c3_evidence.cpp
+ * @brief Generate reproducible C3 report figures and numerical evidence.
+ * @details Uses seamlib's real finders and visualisation code on the portrait
+ * and building fixtures. Run from the repository root using the companion
+ * generate-c3-evidence.ps1 script; generated evidence replaces previous files.
+ */
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -14,6 +19,14 @@
 namespace fs = std::filesystem;
 using namespace seam;
 
+/**
+ * @brief Check a seam before accepting it as report evidence.
+ * @param energy Map defining the required height and valid column range.
+ * @param s Candidate vertical seam.
+ * @throws std::runtime_error For an invalid length, column or disconnected step.
+ * @par Complexity
+ * O(H) time and O(1) additional storage.
+ */
 static void validate(const EnergyMap& energy, const Seam& s) {
     if (s.size() != size_t(energy.height)) throw std::runtime_error("Wrong seam length");
     for (int y = 0; y < energy.height; ++y)
@@ -22,6 +35,16 @@ static void validate(const EnergyMap& energy, const Seam& s) {
             throw std::runtime_error("Invalid seam");
 }
 
+/**
+ * @brief Export two DP/EK comparisons and five-repeat median benchmarks.
+ * @return Zero on normal completion (implicit return from main).
+ * @pre Working directory is the repository root and both small PNGs are 64x43.
+ * @throws std::runtime_error If input dimensions, seam validity, same-image
+ * cost agreement (absolute tolerance 1e-6), or output dimensions fail checks.
+ * @note Image/resize exceptions also propagate. Writes PNGs under
+ * docs/report/figures/c3 and CSVs under results. Benchmark timings exclude
+ * figure generation and compare fresh ten-seam runs, not one-seam searches.
+ */
 int main() {
     const fs::path figures = "docs/report/figures/c3";
     fs::create_directories(figures);

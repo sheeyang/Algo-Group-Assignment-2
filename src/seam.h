@@ -1,3 +1,9 @@
+/**
+ * @file seam.h
+ * @brief Shared seam-finder contracts and seam-removal interface.
+ * @details C3 adds the solver callback and common graph-cut finder, letting EK
+ * and C4's Dinic reuse the same network definition and seam extraction.
+ */
 #pragma once
 #include <vector>
 
@@ -18,23 +24,50 @@ double seam_cost(const EnergyMap& e, const Seam& s);
 // by transposing the image first (see resize.cpp).
 Seam find_seam_dp(const EnergyMap& e);              // optimal, O(W*H)
 Seam find_seam_greedy(const EnergyMap& e);          // local row-by-row choice
+/**
+ * @brief Find a vertical seam by minimum cut using Edmonds-Karp.
+ * @param[in] e Nonempty, consistent map of finite nonnegative energies.
+ * @return One removable column per row, optimal for rounded capacities.
+ * @throws std::invalid_argument For an invalid energy map.
+ * @throws std::overflow_error If capacities or graph indices exceed limits.
+ * @note Uses the common graph-cut validation, rounding and tie behaviour.
+ * @par Complexity
+ * O((W H)^3) worst-case time, O(W H) storage; use small inputs for EK.
+ * @see find_seam_graphcut
+ */
 Seam find_seam_graphcut_ek(const EnergyMap& e);     // min s-t cut, Edmonds-Karp
 Seam find_seam_graphcut_dinic(const EnergyMap& e);  // min s-t cut, Dinic
 
-// A solver must finish max-flow and leave the residual graph in its argument;
-// seam extraction uses those updated capacities, rather than the return value.
+/**
+ * @brief Callback accepting a graph, source and sink, returning additional flow.
+ * @details The solver must complete max-flow and leave the updated residual
+ * graph in its argument. Seam extraction uses that graph, not the return value.
+ */
 using MaxFlowFn = long long (*)(FlowGraph&, int, int);
 
-// Find a minimum-cost vertical seam using the supplied EK or Dinic solver.
-// Returns one column per row, with adjacent columns differing by at most one.
-// Does not modify e. Energies must be finite and nonnegative; capacities are
-// round(energy * 1000), so arbitrary doubles are optimised to that precision.
-// Integer-valued energies are represented exactly within the supported range.
-// Tied minima may produce different positions from DP. Throws invalid_argument
-// for empty/inconsistent maps, invalid energies, or a null solver; throws
-// overflow_error when node indices or capacities exceed the supported range.
-// Network construction and extraction take O(W*H) time and storage, in addition
-// to the supplied solver's cost. Horizontal seams use a transposed input map.
+/**
+ * @brief Build a pixel flow network and extract an optimal vertical seam.
+ * @param[in] e Nonempty energy map whose storage matches width times height;
+ * all entries must be finite and nonnegative. The map is not modified.
+ * @param maxflow Non-null solver satisfying the MaxFlowFn residual contract.
+ * @return One column per row, in bounds and differing by at most one between
+ * adjacent rows, minimising the sum of round(energy * 1000) capacities.
+ * @throws std::invalid_argument For an invalid map or missing solver.
+ * @throws std::overflow_error If node indices or capacities exceed limits.
+ * @note Exceptions from the supplied solver propagate to the caller.
+ * @warning Rounding may change very close rankings in arbitrary double maps.
+ * Compare costs rather than requiring DP's seam positions when minima tie.
+ * @par Network definition
+ * Each row has W real nodes and a virtual node. Source-to-first and
+ * virtual-to-sink edges have INF capacity. Rightward edges carry scaled
+ * energy; backward/diagonal INF edges enforce connected row prefixes.
+ * INF is one greater than the sum of finite capacities, so no minimum cut
+ * crosses an INF edge. The rightmost source-reachable real node is selected.
+ * @par Complexity
+ * Construction/extraction use O(W H) time and storage, plus the solver cost.
+ * There are H(W+1)+2 nodes and 4WH+2H-2W original directed edges.
+ * @see find_seam_graphcut_ek
+ */
 Seam find_seam_graphcut(const EnergyMap& e, MaxFlowFn maxflow);
 
 // Returns a copy of img with the vertical seam removed (one column narrower).

@@ -1,3 +1,10 @@
+/**
+ * @file test_graphcut_photo.cpp
+ * @brief C3 JPEG-to-resized-image integration test using the castle fixture.
+ * @details Samples the scene to 64x43 for practical EK runtime, then removes
+ * two vertical and two horizontal seams. Each EK seam is compared with DP on
+ * the same current energy map; length, bounds and connectivity are checked.
+ */
 #include <cmath>
 #include <filesystem>
 
@@ -6,6 +13,7 @@
 
 using namespace seam;
 
+/** @test EK agrees with DP while resizing the supplied castle photo. */
 TEST_CASE("EK agrees with DP while resizing the supplied castle photo") {
     // Keep the original JPEG in the repo. Sample the whole scene into a small
     // image so the normal test suite can exercise EK without a long runtime.
