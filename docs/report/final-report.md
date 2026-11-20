@@ -136,11 +136,11 @@ while the current image exceeds the target in either dimension:
 | Borders and degenerate cases | Checks cover clamped Sobel sampling, uniform RGB, zero-energy ties, single rows and columns, and 1 × 1 inputs. Finders can return a width-one seam. The public resize entry point keeps both dimensions at least one pixel. |
 | End-to-end resize | Tests check horizontal transposition, mixed removal order, exact output dimensions, invalid targets and preserving the input. A reduced castle photo checks two vertical and two horizontal EK seams against DP. |
 
-The integrated C4 Release log records **100 engine tests** and **5 GUI job tests** passed, plus the CLI dimension check. Section 6.1 reports checks on photographic inputs with an absolute cost tolerance of 10⁻⁶. The test sources and output are included in the repository. [C4 test log](../../results/c4-tests.log)
+The integrated C4 Release log records **100 engine tests** and **5 GUI job tests** passed, plus the CLI dimension check. Section 6.1 reports checks on photographic inputs with an absolute cost tolerance of 10⁻⁶. The test sources and output are included in the repository.
 
 ## 5. Experimental setup
 
-The five main images are team-generated 800 × 533 RGB PNGs. Each image presents a different visual criterion. The small graph-cut fixtures are 64 × 43 box-downscaled copies of the portrait and building. [Image provenance](../../testdata/README.md) · [Small fixtures](../../testdata/c3/README.md)
+The five main images are team-generated 800 × 533 RGB PNGs. Each image presents a different visual criterion. The small graph-cut fixtures are 64 × 43 box-downscaled copies of the portrait and building.
 
 | Image | Visual criterion |
 | --- | --- |
@@ -150,11 +150,11 @@ The five main images are team-generated 800 × 533 RGB PNGs. Each image presents
 | Person at beach | Preserve the person and the horizon. |
 | Wall and door | Preserve the door frame and other straight edges. |
 
-**Four-finder comparison.** We used box-scaled inputs from `landscape-tower.png` and removed two vertical seams per size. The recorded sizes are 100 × 67, 200 × 133, 400 × 267 and 800 × 533. The largest size has DP and greedy rows. Search time is the sum of the two finder calls. The file does not record repeat count, machine or compiler metadata for this run. [Two-removal data](../../results/compare_400.csv)
+**Four-finder comparison.** We used box-scaled inputs from `landscape-tower.png` and removed two vertical seams per size. The recorded sizes are 100 × 67, 200 × 133, 400 × 267 and 800 × 533. The largest size has DP and greedy rows. Search time is the sum of the two finder calls. The file does not record repeat count, machine or compiler metadata for this run.
 
-**Solver benchmark.** A separate Windows MinGW GCC 13.2.0 Release run measured a single vertical seam on the same scene at widths from 32 to 800. The CPU and RAM were unrecorded for this run. Measurements use a steady clock and the median of three repeats where the time budget permits. The timer starts after computing energy. The graph-cut finder time includes graph construction, solver time and extraction. Solver time is also measured independently inside the call. An in-flight search finishes even when it exceeds the 5,000 ms budget. Later sizes for that solver are skipped. [Solver data](../../results/maxflow_benchmark.csv) · [Build notes](C4-implementation-notes.md)
+**Solver benchmark.** A separate Windows MinGW GCC 13.2.0 Release run measured a single vertical seam on the same scene at widths from 32 to 800. The CPU and RAM were unrecorded for this run. Measurements use a steady clock and the median of three repeats where the time budget permits. The timer starts after computing energy. The graph-cut finder time includes graph construction, solver time and extraction. Solver time is also measured independently inside the call. An in-flight search finishes even when it exceeds the 5,000 ms budget. Later sizes for that solver are skipped.
 
-**GUI and full-resize timing.** The GUI example uses DP and greedy at four scales of the landscape, with ten vertical removals and three repeats. The machine is a Windows PC with an Intel Core i7-14700HX and 31.8 GiB of usable RAM. Its local GUI Release build is configured with MinGW GCC 15.2.0 and `-O3 -DNDEBUG`. The GUI and CLI share a steady-clock benchmark implementation. It reports finder time and seam cost from the same run as the median total time. Total time includes copying the starting image, computing energy, finding and costing seams, and removing them. Loading, initial scaling, display and export are outside this interval. [GUI benchmark data](../../results/gui-benchmark.csv)
+**GUI and full-resize timing.** The GUI example uses DP and greedy at four scales of the landscape, with ten vertical removals and three repeats. The machine is a Windows PC with an Intel Core i7-14700HX and 31.8 GiB of usable RAM. Its local GUI Release build is configured with MinGW GCC 15.2.0 and `-O3 -DNDEBUG`. The GUI and CLI share a steady-clock benchmark implementation. It reports finder time and seam cost from the same run as the median total time. Total time includes copying the starting image, computing energy, finding and costing seams, and removing them. Loading, initial scaling, display and export are outside this interval.
 
 **Quality and correctness.** On a fixed energy map we compare seam validity and cost. Across a sequence of removals, costs are summed using the current map at every step. For the visual comparison we hold output size fixed and inspect the subject, straight edges and surrounding context. The two conventional baselines are bilinear resizing to the target dimensions and a centre crop to those same dimensions.
 
@@ -170,9 +170,9 @@ The five main images are team-generated 800 × 533 RGB PNGs. Each image presents
 | Landscape, 200 × 133, two seams | 4,643.69 | 8,614.00 | 4,643.69 | 4,643.69 |
 | Landscape, 400 × 267, two seams | 7,500.56 | 14,075.60 | 7,500.56 | 7,500.56 |
 
-**Table 1.** First-seam costs and two-removal sums in energy units. A dash indicates no measurement in the cited dataset. [EK first seams](../../results/c3-first-seams.csv) · [Dinic first seams](../../results/c4-first-seams.csv) · [Two-removal data](../../results/compare_400.csv)
+**Table 1.** First-seam costs and two-removal sums in energy units. A dash indicates no measurement was recorded for that comparison.
 
-On both small fixtures, each graph-cut solver removed ten seams. The cost at every step matched DP run on that solver's current image within 10⁻⁶. The building's first seam and final pixels matched DP's. The portrait had different first-seam positions and different final pixels at the same seam cost on the initial map. Several seams can be optimal, and choosing one can change the map for the next removal. [EK step checks](../../results/c3-seam-checks.csv) · [Dinic step checks](../../results/c4-seam-checks.csv)
+On both small fixtures, each graph-cut solver removed ten seams. The cost at every step matched DP run on that solver's current image within 10⁻⁶. The building's first seam and final pixels matched DP's. The portrait had different first-seam positions and different final pixels at the same seam cost on the initial map. Several seams can be optimal, and choosing one can change the map for the next removal.
 
 ### 6.2 Visual results
 
@@ -182,11 +182,11 @@ On both small fixtures, each graph-cut solver removed ten seams. The cost at eve
 
 ![DP and greedy results on the building and portrait](figures/report-greedy-comparison.png)
 
-**Figure 3.** DP and greedy at the same 560 × 533 output size. Greedy keeps more of the side sky and narrows the façade. DP removes more sky and preserves more of the façade's width. On the portrait, both retain the face, while the greedy output narrows its outline and leaves more wall. [Width sweep](figures/README.md)
+**Figure 3.** DP and greedy at the same 560 × 533 output size. Greedy keeps more of the side sky and narrows the façade. DP removes more sky and preserves more of the façade's width. On the portrait, both retain the face, while the greedy output narrows its outline and leaves more wall.
 
 ![DP, Edmonds–Karp and Dinic first seam overlays and results on the portrait](figures/report-graphcut-portrait.png)
 
-**Figure 4.** First seam overlays (top) and results after ten removals (bottom). The 64 × 43 portrait shrinks to 54 × 43. All three optimisers have the same initial seam cost. DP and graph cut take slightly different equally cheap paths through the background, and each result retains the face. [Graph-cut panels](figures/c4/README.md)
+**Figure 4.** First seam overlays (top) and results after ten removals (bottom). The 64 × 43 portrait shrinks to 54 × 43. All three optimisers have the same initial seam cost. DP and graph cut take slightly different equally cheap paths through the background, and each result retains the face.
 
 ### 6.3 Runtime
 
@@ -197,15 +197,15 @@ On both small fixtures, each graph-cut solver removed ten seams. The cost at eve
 | 400 × 267 | 0.12715 | 0.003465 | 93,284.2 | 1,784.04 |
 | 800 × 533 | 0.30243 | 0.050885 | — | — |
 
-**Table 2.** Accumulated finder time for two removals, excluding the shared pipeline. [Two-removal data](../../results/compare_400.csv)
+**Table 2.** Accumulated finder time for two removals, excluding the shared pipeline.
 
 ![Log-log plot of search time against image area with four separate curves](figures/report-runtime.png)
 
 **Figure 5.** Table 2 on logarithmic axes. The EK and Dinic curves end at their largest recorded size. Their times include building the network and extracting the seam.
 
-The separate solver benchmark shows what happens inside the graph-cut calls. At 128 × 85, EK used 3,356 BFS augmentations and took 1,889 ms in its solver. Dinic sent the same number of augmenting pushes in 89 level-graph phases and took 115 ms in its solver. EK crossed the five-second budget at 200 × 133, while Dinic first crossed it at 400 × 267. A separate single-run 1000 × 700 Dinic check matched the DP cost of 7,967.598 and took 109.75 s for the entire search. [Solver data](../../results/maxflow_benchmark.csv) · [Large check](../../results/maxflow_large.csv)
+The separate solver benchmark shows what happens inside the graph-cut calls. At 128 × 85, EK used 3,356 BFS augmentations and took 1,889 ms in its solver. Dinic sent the same number of augmenting pushes in 89 level-graph phases and took 115 ms in its solver. EK crossed the five-second budget at 200 × 133, while Dinic first crossed it at 400 × 267. A separate single-run 1000 × 700 Dinic check matched the DP cost of 7,967.598 and took 109.75 s for the entire search.
 
-The GUI run illustrates the effect of shared work. At 800 × 533 over ten removals, greedy spent 0.132 ms searching versus 11.185 ms for DP. Total time was 64.222 ms for greedy and 72.397 ms for DP, a difference of about 11% relative to DP. The totals include full Sobel recomputation and the RGB copies. [GUI benchmark data](../../results/gui-benchmark.csv)
+The GUI run illustrates the effect of shared work. At 800 × 533 over ten removals, greedy spent 0.132 ms searching versus 11.185 ms for DP. Total time was 64.222 ms for greedy and 72.397 ms for DP, a difference of about 11% relative to DP. The totals include full Sobel recomputation and the RGB copies.
 
 ## 7. Complexity analysis
 
@@ -244,13 +244,13 @@ Graph cut gives an independent formulation with two interchangeable solvers. It 
 
 ## 9. Improvements (Q5d)
 
-These variants were evaluated with the project's DP optimisation benchmarks. The standard four-finder comparison uses the common resize path. The repeated-removal improvements here build on the DP subproblem from Q2(a)(ii) and the independent convolution outputs from Q2(b). [Optimisation data](../../results/improvements_combined.csv)
+These variants were evaluated with the project's DP optimisation benchmarks. The standard four-finder comparison uses the common resize path. The repeated-removal improvements here build on the DP subproblem from Q2(a)(ii) and the independent convolution outputs from Q2(b).
 
-**Rolling cost rows and back-pointers.** A row depends on just the previous row. Two rows of doubles suffice during the forward pass. To reconstruct the seam, store one signed byte per pixel with predecessor direction −1, 0 or +1. The method retains Θ(mn) space but reduces cumulative-cost storage from 8mn bytes to about mn + 16n bytes before output and allocation overhead. For the 2048 × 1536 benchmark, measured peak heap for the finder dropped from 24.01 to 3.04 MiB and the combined benchmark showed a 1.03× full-pipeline speedup for this variant. [Memory data](../../results/improvements_memory.csv)
+**Rolling cost rows and back-pointers.** A row depends on just the previous row. Two rows of doubles suffice during the forward pass. To reconstruct the seam, store one signed byte per pixel with predecessor direction −1, 0 or +1. The method retains Θ(mn) space but reduces cumulative-cost storage from 8mn bytes to about mn + 16n bytes before output and allocation overhead. For the 2048 × 1536 benchmark, measured peak heap for the finder dropped from 24.01 to 3.04 MiB and the combined benchmark showed a 1.03× full-pipeline speedup for this variant.
 
-**Incremental energy.** Shift cached energy values to match retained pixels. For each row, re-evaluate where its 3 × 3 Sobel neighbourhood may have changed due to the seam in that row or either adjacent row. The implementation considers at most six candidate columns per row. The Sobel re-evaluation is O(m) after removal, while copying the cached map and RGB data stays Θ(mn). The combined benchmark measured 3.07×, 3.11× and 2.05× pipeline speedups on the small, medium and large inputs, with identical output pixels. [Combined measurements](../../results/improvements_combined.csv)
+**Incremental energy.** Shift cached energy values to match retained pixels. For each row, re-evaluate where its 3 × 3 Sobel neighbourhood may have changed due to the seam in that row or either adjacent row. The implementation considers at most six candidate columns per row. The Sobel re-evaluation is O(m) after removal, while copying the cached map and RGB data stays Θ(mn). The combined benchmark measured 3.07×, 3.11× and 2.05× pipeline speedups on the small, medium and large inputs, with identical output pixels.
 
-**Multithreading.** Sobel output rows can be computed independently with a shared read-only RGB image, as discussed in Q2(b). With eight threads the energy pass was 2.20× faster on 1024 × 768 and 2.68× faster on 2048 × 1536. The small 256 × 192 energy pass slowed down. Splitting columns inside a DP row is possible, but each row needs its predecessor row to be complete. The benchmark's per-row barriers outweighed the small amount of work per cell. Successive removals also depend on earlier ones, which constrains parallelism across seams. [Thread measurements](../../results/improvements_threads.csv)
+**Multithreading.** Sobel output rows can be computed independently with a shared read-only RGB image, as discussed in Q2(b). With eight threads the energy pass was 2.20× faster on 1024 × 768 and 2.68× faster on 2048 × 1536. The small 256 × 192 energy pass slowed down. Splitting columns inside a DP row is possible, but each row needs its predecessor row to be complete. The benchmark's per-row barriers outweighed the small amount of work per cell. Successive removals also depend on earlier ones, which constrains parallelism across seams.
 
 ## 10. Bonus features
 
@@ -258,15 +258,15 @@ These variants were evaluated with the project's DP optimisation benchmarks. The
 
 ![All removed seams mapped to the input beside the resized output](figures/report-bonus-steps.png)
 
-**Figure 6.** Overview and final output for an 800 × 533 input reduced to 640 × 430 with mixed-direction removal. [Step-frame evidence](figures/all_seams_overview.png)
+**Figure 6.** Overview and final output for an 800 × 533 input reduced to 640 × 430 with mixed-direction removal.
 
-**Interactive resizing.** The desktop GUI lets users load an image, choose a finder, edit target dimensions, start or cancel work, and inspect the result and removed seams. A background worker runs the engine and reports progress to the UI. Cancellation is checked between removals, so a running max-flow call must reach a seam boundary before cancellation takes effect. The benchmark panel draws results and exports the same data as CSV. [GUI notes](../../gui/README.md)
+**Interactive resizing.** The desktop GUI lets users load an image, choose a finder, edit target dimensions, start or cancel work, and inspect the result and removed seams. A background worker runs the engine and reports progress to the UI. Cancellation is checked between removals, so a running max-flow call must reach a seam boundary before cancellation takes effect. The benchmark panel draws results and exports the same data as CSV.
 
 ![Desktop GUI with the original landscape and a completed DP resize](figures/gui-main.png)
 
 **Figure 7.** Interactive resize from 800 × 533 to 600 × 533. The preview shows the original and the output, and the controls report 200 removed seams.
 
-**CI/CD.** GitHub Actions builds and tests on Windows and Ubuntu. A smoke test resizes a fixture, checks its dimensions and checks that the step-frame and overview files exist. Workflow configurations also retain binaries and smoke outputs as artifacts and provide a tagged release job. [Workflow](../../.github/workflows/ci.yml)
+**CI/CD.** GitHub Actions builds and tests on Windows and Ubuntu. A smoke test resizes a fixture, checks its dimensions and checks that the step-frame and overview files exist. Workflow configurations also retain binaries and smoke outputs as artifacts and provide a tagged release job.
 
 ## 11. Limitations and conclusion
 
@@ -281,7 +281,7 @@ For shrinking images with the implemented backward energy and seam constraints, 
 
 ## AI usage declaration (9a v)
 
-We used Claude Code, ChatGPT, Codex and Antigravity for project planning, implementation support, test fixtures and cases, benchmark tooling, and report drafts. The development log records the tool, prompt, outcome and checks for each task. It includes human review of the generated implementation, test and benchmark runs, and revisions to the report. [Full AI usage log](../ai-usage.md)
+We used Claude Code, ChatGPT, Codex and Antigravity for project planning, implementation support, test fixtures and cases, benchmark tooling, and report drafts. The development log records the tool, prompt, outcome and checks for each task. It includes human review of the generated implementation, test and benchmark runs, and revisions to the report.
 
 | Use | Main prompts recorded by the team |
 | --- | --- |
