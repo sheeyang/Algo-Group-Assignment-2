@@ -1,3 +1,7 @@
+/**
+ * @brief Asynchronous seamlib workers with cooperative cancellation and error capture.
+ * @file jobs.cpp
+ */
 #include "jobs.h"
 
 #include <stdexcept>
@@ -6,12 +10,22 @@
 namespace seam::gui {
 namespace {
 using Clock = std::chrono::steady_clock;
+/** @brief Internal control-flow signal caught before leaving a worker job. */
 struct Cancelled {};
+/**
+ * @brief Measure elapsed wall-clock time from a steady-clock timestamp.
+ * @param start Steady-clock timestamp marking measurement start.
+ * @return Elapsed milliseconds.
+ */
 double milliseconds(Clock::time_point start) {
     return std::chrono::duration<double, std::milli>(Clock::now() - start).count();
 }
 }  // namespace
 
+/**
+ * @brief Cancel and join any worker before destroying the progress atomics.
+ * @note Cooperative cancellation may wait for a running seam or benchmark.
+ */
 Jobs::~Jobs() {
     cancel();
     // Keep this object and its atomics alive until the callback has stopped.
@@ -19,6 +33,12 @@ Jobs::~Jobs() {
     if (future_.valid()) future_.wait();
 }
 
+/**
+ * @brief Initialise progress and timing for a new job.
+ * @param kind New background job kind.
+ * @param total Expected progress-unit count.
+ * @throws std::logic_error If a previous future has not been consumed.
+ */
 void Jobs::begin(JobKind kind, int total) {
     if (busy()) throw std::logic_error("A job is already running.");
     kind_ = kind;
@@ -29,8 +49,23 @@ void Jobs::begin(JobKind kind, int total) {
     started_ = Clock::now();
 }
 
+/**
+ * @brief Measure time since begin started the current job.
+ * @return Elapsed wall-clock milliseconds.
+ * @pre A job has been started before interpreting this value.
+ */
 double Jobs::elapsed_ms() const { return milliseconds(started_); }
 
+/**
+ * @brief Launch a background resize using an owned copy of the input.
+ * @param input Owned input image transferred to the background worker.
+ * @param width Requested final width, between one and the input width.
+ * @param height Requested final height, between one and the input height.
+ * @param algorithm Seam-finding algorithm.
+ * @throws std::logic_error If a job has not been consumed.
+ * @note Worker-side errors are captured in JobResult. A cancelled resize publishes no partial
+ * output image; cancellation is observed at seam boundaries.
+ */
 void Jobs::start_resize(Image input, int width, int height, Algorithm algorithm) {
     begin(JobKind::Resize, input.width - width + input.height - height);
     future_ = std::async(std::launch::async,
@@ -67,6 +102,14 @@ void Jobs::start_resize(Image input, int width, int height, Algorithm algorithm)
         });
 }
 
+/**
+ * @brief Launch background benchmarks, checking cancellation between algorithms.
+ * @param input Owned input image transferred to the background worker.
+ * @param options Algorithms, scales, repetitions, seam count and cooperative budget.
+ * @throws std::invalid_argument For an empty algorithm list.
+ * @throws std::logic_error If a job has not been consumed.
+ * @note Cancelled benchmarks may retain completed rows.
+ */
 void Jobs::start_benchmark(Image input, BenchmarkOptions options) {
     if (options.algorithms.empty()) throw std::invalid_argument("Select at least one algorithm.");
     begin(JobKind::Benchmark, static_cast<int>(options.algorithms.size()));
@@ -94,6 +137,11 @@ void Jobs::start_benchmark(Image input, BenchmarkOptions options) {
         });
 }
 
+/**
+ * @brief Consume the worker result without waiting for an unfinished job.
+ * @return Completed result, or nullopt while idle/not ready.
+ * @note The controller is owned by the UI thread. Consuming the future makes it reusable.
+ */
 std::optional<JobResult> Jobs::take_ready() {
     if (!busy() || future_.wait_for(std::chrono::milliseconds(0)) != std::future_status::ready)
         return std::nullopt;

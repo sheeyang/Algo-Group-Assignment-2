@@ -1,3 +1,7 @@
+/**
+ * @brief Combined optimisation benchmarks over deterministic synthetic scenes.
+ * @file bench_combined.cpp
+ */
 // Whole-pipeline comparison of variant combinations: remove k vertical seams, ms per seam.
 // Usage: bench_combined <out_dir>   -> improvements_combined.csv
 #include <algorithm>
@@ -13,6 +17,13 @@
 using namespace seam;
 using Clock = std::chrono::steady_clock;
 
+/**
+ * @brief Generate a fixed-seed scene of gradients, bands and noise for benchmarks.
+ * @param W Full row width.
+ * @param H Number of rows.
+ * @param seed Fixed seed for reproducible fixture pixels.
+ * @return Owned RGB benchmark image.
+ */
 static Image synthetic_image(int W, int H, unsigned seed) {  // identical to bench_improvements.cpp
     std::mt19937 rng(seed);
     std::normal_distribution<double> noise(0, 6);
@@ -26,6 +37,13 @@ static Image synthetic_image(int W, int H, unsigned seed) {  // identical to ben
     return im;
 }
 
+/**
+ * @brief Combined optimisation benchmarks over deterministic synthetic scenes.
+ * @param argc Argument count, including the executable name.
+ * @param argv Null-terminated command-line argument strings.
+ * @return Zero on normal completion; program-specific validation errors are reported or propagate.
+ * @note Run benchmark/evidence tools from the repository root.
+ */
 int main(int argc, char** argv) {
     const std::string out = argc > 1 ? argv[1] : "results";
     std::ofstream csv(out + "/improvements_combined.csv");

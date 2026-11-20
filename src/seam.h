@@ -17,12 +17,37 @@ namespace seam {
 using Seam = std::vector<int>;
 
 // Sum of energy along the seam (GLOSSARY.md: Seam cost).
+/**
+ * @brief Sum original energy values along a vertical seam.
+ * @param e Input row-major energy map.
+ * @param s Selected seam in current image coordinates.
+ * @return Sum of e.at(s[y], y) over all rows.
+ * @pre s contains one valid column per row; inputs are not validated here.
+ * @par Complexity
+ * O(H) time and O(1) auxiliary storage.
+ */
 double seam_cost(const EnergyMap& e, const Seam& s);
 
 // DP and greedy ties break toward the leftmost column. Graph cut may choose a
 // different seam with the same minimum cost. Horizontal seams are found
 // by transposing the image first (see resize.cpp).
+/**
+ * @brief Find an optimal vertical seam using a full cumulative-cost table.
+ * @param e Input row-major energy map.
+ * @return Minimum-cost seam; ties prefer leftmost columns from the bottom upward.
+ * @throws std::invalid_argument For an empty or inconsistent map.
+ * @par Complexity
+ * O(W H) time and storage.
+ */
 Seam find_seam_dp(const EnergyMap& e);              // optimal, O(W*H)
+/**
+ * @brief Choose the cheapest top pixel, then the cheapest reachable pixel in each row.
+ * @param e Input row-major energy map.
+ * @return Connected seam with leftmost local tie-breaking; global optimality is not guaranteed.
+ * @throws std::invalid_argument For an empty or inconsistent map.
+ * @par Complexity
+ * O(W+H) time and O(H) output storage.
+ */
 Seam find_seam_greedy(const EnergyMap& e);          // local row-by-row choice
 /**
  * @brief Find a vertical seam by minimum cut using Edmonds-Karp.
@@ -36,6 +61,13 @@ Seam find_seam_greedy(const EnergyMap& e);          // local row-by-row choice
  * @see find_seam_graphcut
  */
 Seam find_seam_graphcut_ek(const EnergyMap& e);     // min s-t cut, Edmonds-Karp
+/**
+ * @brief Select Dinic for the shared graph-cut network and seam extraction.
+ * @param e Input row-major energy map.
+ * @return Optimal vertical seam for rounded integer capacities.
+ * @see find_seam_graphcut
+ * @note Validation and exceptions are inherited from the common finder.
+ */
 Seam find_seam_graphcut_dinic(const EnergyMap& e);  // min s-t cut, Dinic
 
 /**
@@ -71,6 +103,16 @@ using MaxFlowFn = long long (*)(FlowGraph&, int, int);
 Seam find_seam_graphcut(const EnergyMap& e, MaxFlowFn maxflow);
 
 // Returns a copy of img with the vertical seam removed (one column narrower).
+/**
+ * @brief Copy every row while omitting its selected seam pixel.
+ * @param img RGB image with storage matching its dimensions.
+ * @param s Selected seam in current image coordinates.
+ * @return New image one column narrower; input remains unchanged.
+ * @throws std::invalid_argument For zero width, wrong seam length or out-of-range columns.
+ * @note Connectivity is assumed, not validated; width one produces a zero-width result.
+ * @par Complexity
+ * O(W H) time and output storage.
+ */
 Image remove_vertical_seam(const Image& img, const Seam& s);
 
 }  // namespace seam

@@ -1,3 +1,7 @@
+/**
+ * @brief Equivalence tests for low-memory/threaded DP and incremental energy.
+ * @file test_improvements.cpp
+ */
 // C6 improvements (5d): every variant must return exactly what the baseline returns.
 #include <random>
 
@@ -8,6 +12,14 @@ using namespace seam;
 
 namespace {
 
+/**
+ * @brief Generate a random energy map with bounded integer energies.
+ * @param W Full row width.
+ * @param H Number of rows.
+ * @param rng Pseudo-random generator advanced by this function.
+ * @param levels Maximum integer energy value (inclusive).
+ * @return A map suitable for exact DP-reference comparisons.
+ */
 EnergyMap random_map(int W, int H, std::mt19937& rng, int levels) {
     EnergyMap m;
     m.width = W;
@@ -18,6 +30,13 @@ EnergyMap random_map(int W, int H, std::mt19937& rng, int levels) {
     return m;
 }
 
+/**
+ * @brief Build deterministic pseudo-random RGB pixels for tests.
+ * @param W Full row width.
+ * @param H Number of rows.
+ * @param rng Pseudo-random generator advanced by this function.
+ * @return Owned image generated from the seed or supplied RNG.
+ */
 Image random_image(int W, int H, std::mt19937& rng) {
     Image im(W, H);
     for (auto& v : im.rgb) v = uint8_t(rng() & 255);
@@ -26,6 +45,7 @@ Image random_image(int W, int H, std::mt19937& rng) {
 
 }  // namespace
 
+/** @test low-memory and threaded DP return the baseline seam. */
 TEST_CASE("low-memory and threaded DP return the baseline seam") {
     std::mt19937 rng(12345);
     for (int iter = 0; iter < 400; ++iter) {
@@ -40,6 +60,7 @@ TEST_CASE("low-memory and threaded DP return the baseline seam") {
     }
 }
 
+/** @test threaded energy equals sobel_energy. */
 TEST_CASE("threaded energy equals sobel_energy") {
     std::mt19937 rng(7);
     for (int iter = 0; iter < 60; ++iter) {
@@ -48,6 +69,7 @@ TEST_CASE("threaded energy equals sobel_energy") {
     }
 }
 
+/** @test incremental energy equals a full recompute after every removal. */
 TEST_CASE("incremental energy equals a full recompute after every removal") {
     std::mt19937 rng(8);
     for (int iter = 0; iter < 60; ++iter) {
@@ -62,6 +84,7 @@ TEST_CASE("incremental energy equals a full recompute after every removal") {
     }
 }
 
+/** @test incremental energy is correct for arbitrary valid seams (borders). */
 TEST_CASE("incremental energy is correct for arbitrary valid seams (borders)") {
     std::mt19937 rng(9);
     for (int iter = 0; iter < 200; ++iter) {
@@ -79,6 +102,7 @@ TEST_CASE("incremental energy is correct for arbitrary valid seams (borders)") {
     }
 }
 
+/** @test every option combination of shrink_width gives the identical image. */
 TEST_CASE("every option combination of shrink_width gives the identical image") {
     std::mt19937 rng(10);
     for (int iter = 0; iter < 20; ++iter) {

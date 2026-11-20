@@ -1,3 +1,7 @@
+/**
+ * @brief Mixed-direction resizing, callback orientation and input-validation tests.
+ * @file test_resize.cpp
+ */
 #include <stdexcept>
 #include <vector>
 
@@ -7,6 +11,12 @@
 using namespace seam;
 
 // Deterministic textured image, so the energy map is varied and seams are not all ties.
+/**
+ * @brief Generate a deterministic RGB pattern for image/resize tests.
+ * @param w Image/map width.
+ * @param h Image/map height.
+ * @return Owned fixture with the requested dimensions.
+ */
 static Image make_image(int w, int h) {
     Image img(w, h);
     for (int y = 0; y < h; ++y)
@@ -26,6 +36,15 @@ struct Step {
     Image before;
 };
 
+/**
+ * @brief Capture every DP resize callback for pipeline assertions.
+ * @param img RGB image with storage matching its dimensions.
+ * @param tw Target width for the test resize.
+ * @param th Target height for the test resize.
+ * @param result Optional destination for the final resized image.
+ * @return Ordered step snapshots.
+ * @note Writes the final image through result when it is non-null.
+ */
 std::vector<Step> record(const Image& img, int tw, int th, Image* result = nullptr) {
     std::vector<Step> steps;
     Image out = resize(img, tw, th, Algorithm::DP, [&](const Image& before, const Seam& s, bool vertical) {
@@ -36,6 +55,7 @@ std::vector<Step> record(const Image& img, int tw, int th, Image* result = nullp
 }
 }  // namespace
 
+/** @test resize to the same size is a no-op: same pixels, no callback calls. */
 TEST_CASE("resize to the same size is a no-op: same pixels, no callback calls") {
     Image img = make_image(8, 6);
     Image out;
@@ -46,6 +66,7 @@ TEST_CASE("resize to the same size is a no-op: same pixels, no callback calls") 
     CHECK(out.rgb == img.rgb);
 }
 
+/** @test resize hits the exact target size, and calls back once per removed seam. */
 TEST_CASE("resize hits the exact target size, and calls back once per removed seam") {
     struct Case { int w, h, tw, th; };
     const Case cases[] = {
@@ -68,6 +89,7 @@ TEST_CASE("resize hits the exact target size, and calls back once per removed se
     }
 }
 
+/** @test resize alternates vertical and horizontal seams, then finishes the longer axis. */
 TEST_CASE("resize alternates vertical and horizontal seams, then finishes the longer axis") {
     // Remove 3 columns and 2 rows: V H V H V.
     auto steps = record(make_image(8, 6), 5, 4);
@@ -80,6 +102,7 @@ TEST_CASE("resize alternates vertical and horizontal seams, then finishes the lo
     for (const Step& s : record(make_image(8, 6), 8, 2)) CHECK(!s.vertical);
 }
 
+/** @test each callback sees the image shrink by one in the removed dimension. */
 TEST_CASE("each callback sees the image shrink by one in the removed dimension") {
     auto steps = record(make_image(8, 6), 5, 4);
     int w = 8, h = 6;
@@ -102,6 +125,7 @@ TEST_CASE("each callback sees the image shrink by one in the removed dimension")
     CHECK(h == 4);
 }
 
+/** @test width-only resize equals removing the DP seam repeatedly by hand. */
 TEST_CASE("width-only resize equals removing the DP seam repeatedly by hand") {
     Image img = make_image(9, 5);
     Image expected = img;
@@ -113,6 +137,7 @@ TEST_CASE("width-only resize equals removing the DP seam repeatedly by hand") {
     CHECK(got.rgb == expected.rgb);
 }
 
+/** @test a horizontal seam on I is the vertical seam on transpose(I). */
 TEST_CASE("a horizontal seam on I is the vertical seam on transpose(I)") {
     Image img = make_image(7, 6);
     auto steps = record(img, 7, 3);  // height-only: every step is a horizontal seam
@@ -125,6 +150,7 @@ TEST_CASE("a horizontal seam on I is the vertical seam on transpose(I)") {
     }
 }
 
+/** @test height-only resize equals the transpose / width-only / transpose route. */
 TEST_CASE("height-only resize equals the transpose / width-only / transpose route") {
     Image img = make_image(7, 6);
     Image direct = resize(img, 7, 3, Algorithm::DP);
@@ -134,6 +160,7 @@ TEST_CASE("height-only resize equals the transpose / width-only / transpose rout
     CHECK(direct.rgb == via_transpose.rgb);
 }
 
+/** @test resize leaves the input image untouched. */
 TEST_CASE("resize leaves the input image untouched") {
     Image img = make_image(6, 5);
     Image copy = img;
@@ -143,6 +170,7 @@ TEST_CASE("resize leaves the input image untouched") {
     CHECK(img.rgb == copy.rgb);
 }
 
+/** @test resize rejects invalid targets. */
 TEST_CASE("resize rejects invalid targets") {
     Image img = make_image(6, 5);
     CHECK_THROWS_AS(resize(img, 0, 5, Algorithm::DP), std::invalid_argument);

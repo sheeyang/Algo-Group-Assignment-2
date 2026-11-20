@@ -1,9 +1,23 @@
+/**
+ * @brief Sobel filter arithmetic, clamped borders and grayscale invariance tests.
+ * @file test_energy.cpp
+ */
 #include "doctest.h"
 #include "energy.h"
 
 using namespace seam;
 
 // Fill the whole image with one grey level (R = G = B = v).
+/**
+ * @brief Fill a half-open rectangular test region with one RGB grayscale level.
+ * @param img RGB image with storage matching its dimensions.
+ * @param x0 First included column.
+ * @param x1 Exclusive last column.
+ * @param y0 First included row.
+ * @param y1 Exclusive last row.
+ * @param v Grayscale intensity assigned to all three channels.
+ * @pre The region lies within img; x1 and y1 are exclusive bounds.
+ */
 static void fill_grey(Image& img, int x0, int x1, int y0, int y1, uint8_t v) {
     for (int y = y0; y < y1; ++y)
         for (int x = x0; x < x1; ++x)
@@ -14,6 +28,7 @@ static void fill_grey(Image& img, int x0, int x1, int y0, int y1, uint8_t v) {
 // energy = |Gx| + |Gy|. For a grey image with R = G = B = v the grayscale value is v (the three
 // weights 0.299 + 0.587 + 0.114 sum to 1).
 
+/** @test Sobel energy: a flat image has zero energy everywhere. */
 TEST_CASE("Sobel energy: a flat image has zero energy everywhere") {
     Image img(4, 3);
     for (int y = 0; y < 3; ++y)
@@ -29,6 +44,7 @@ TEST_CASE("Sobel energy: a flat image has zero energy everywhere") {
     for (double v : m.e) CHECK(v == doctest::Approx(0.0));
 }
 
+/** @test Sobel energy: a vertical edge is high only next to the edge. */
 TEST_CASE("Sobel energy: a vertical edge is high only next to the edge") {
     // Columns 0-1 black, columns 2-3 white. Hand calculation at x = 1: the column to the left is
     // 0 and the column to the right is 255, in all three kernel rows, so
@@ -46,6 +62,7 @@ TEST_CASE("Sobel energy: a vertical edge is high only next to the edge") {
     }
 }
 
+/** @test Sobel energy: a horizontal edge is high only next to the edge. */
 TEST_CASE("Sobel energy: a horizontal edge is high only next to the edge") {
     // Rows 0-1 black, rows 2-3 white: the transpose of the case above, so the result is symmetric.
     Image img(3, 4);
@@ -56,6 +73,7 @@ TEST_CASE("Sobel energy: a horizontal edge is high only next to the edge") {
         for (int x = 0; x < 3; ++x) CHECK(m.at(x, y) == doctest::Approx(expect[y]));
 }
 
+/** @test Sobel energy: border pixels clamp missing neighbours to the nearest pixel. */
 TEST_CASE("Sobel energy: border pixels clamp missing neighbours to the nearest pixel") {
     // 2x1 image, grey 0 then 100. There is only one row, so the rows above and below clamp to it
     // and Gy cancels. At x = 0 the left neighbour clamps to x = 0 itself (0) and the right is 100:
@@ -68,6 +86,7 @@ TEST_CASE("Sobel energy: border pixels clamp missing neighbours to the nearest p
     CHECK(m.at(1, 0) == doctest::Approx(400.0));
 }
 
+/** @test Sobel energy: a 1x1 image has zero energy. */
 TEST_CASE("Sobel energy: a 1x1 image has zero energy") {
     Image img(1, 1);
     img.px(0, 0)[0] = 255;
@@ -76,6 +95,7 @@ TEST_CASE("Sobel energy: a 1x1 image has zero energy") {
     CHECK(m.at(0, 0) == doctest::Approx(0.0));
 }
 
+/** @test Sobel energy: a single white pixel in a black 3x3 image. */
 TEST_CASE("Sobel energy: a single white pixel in a black 3x3 image") {
     // White centre (1,1). The centre's own kernel sees only black neighbours, so its energy is 0.
     // Every other pixel touches the white centre through one kernel entry:
@@ -96,6 +116,7 @@ TEST_CASE("Sobel energy: a single white pixel in a black 3x3 image") {
     CHECK(m.at(1, 2) == doctest::Approx(510.0));
 }
 
+/** @test Sobel energy: grayscale uses the luma weights 0.299 / 0.587 / 0.114. */
 TEST_CASE("Sobel energy: grayscale uses the luma weights 0.299 / 0.587 / 0.114") {
     // 2x1 image: left pixel black, right pixel a pure channel at 255. Energy = 4 * grayscale of that
     // pixel (the Gx calculation from the clamping test).
@@ -112,6 +133,7 @@ TEST_CASE("Sobel energy: grayscale uses the luma weights 0.299 / 0.587 / 0.114")
     }
 }
 
+/** @test Sobel energy: energy of the transposed image is the transposed energy map. */
 TEST_CASE("Sobel energy: energy of the transposed image is the transposed energy map") {
     // The kernels are transposes of each other and |Gx| + |Gy| is symmetric, so a horizontal seam
     // found on the transposed image is a faithful horizontal seam of the original.

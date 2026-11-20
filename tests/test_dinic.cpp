@@ -1,3 +1,7 @@
+/**
+ * @brief Known-flow, random-reference and iterative-depth tests for Dinic.
+ * @file test_dinic.cpp
+ */
 #include <cmath>
 #include <limits>
 #include <random>
@@ -13,6 +17,7 @@ using namespace seam;
 // Dinic on textbook flow networks
 // ---------------------------------------------------------------------------
 
+/** @test Dinic solves the textbook six-node network. */
 TEST_CASE("Dinic solves the textbook six-node network") {
     FlowGraph g(6);
     g.add_edge(0, 1, 16);
@@ -39,6 +44,7 @@ TEST_CASE("Dinic solves the textbook six-node network") {
     CHECK(dinic(g, 0, 5) == 0);  // already saturated: no augmenting path
 }
 
+/** @test Dinic can cancel an earlier flow choice. */
 TEST_CASE("Dinic can cancel an earlier flow choice") {
     FlowGraph g(6);
     g.add_edge(0, 1, 1);
@@ -52,6 +58,7 @@ TEST_CASE("Dinic can cancel an earlier flow choice") {
     CHECK(g.edges[ac].cap == 1);
 }
 
+/** @test Dinic handles parallel edges, self loops and zero capacities. */
 TEST_CASE("Dinic handles parallel edges, self loops and zero capacities") {
     FlowGraph g(3);
     g.add_edge(0, 0, 100);
@@ -62,6 +69,7 @@ TEST_CASE("Dinic handles parallel edges, self loops and zero capacities") {
     CHECK(dinic(g, 0, 2) == 4);
 }
 
+/** @test Dinic returns zero for an unreachable sink. */
 TEST_CASE("Dinic returns zero for an unreachable sink") {
     FlowGraph g(3);
     g.add_edge(0, 1, 9);
@@ -69,6 +77,7 @@ TEST_CASE("Dinic returns zero for an unreachable sink") {
     CHECK(reachable_from(g, 0) == std::vector<bool>{true, true, false});
 }
 
+/** @test Dinic measures level phases separately from path augmentations. */
 TEST_CASE("Dinic measures level phases separately from path augmentations") {
     FlowGraph g(4);
     g.add_edge(0, 3, 1);  // first phase: the direct path
@@ -89,6 +98,7 @@ TEST_CASE("Dinic measures level phases separately from path augmentations") {
     CHECK(stats.augmentations == 0);
 }
 
+/** @test Dinic traverses a 100000-node path without recursive stack growth. */
 TEST_CASE("Dinic traverses a 100000-node path without recursive stack growth") {
     const int nodes = 100000;
     FlowGraph g(nodes);
@@ -99,6 +109,7 @@ TEST_CASE("Dinic traverses a 100000-node path without recursive stack growth") {
     CHECK(stats.augmentations == 1);
 }
 
+/** @test Dinic rejects invalid arguments and flow overflow. */
 TEST_CASE("Dinic rejects invalid arguments and flow overflow") {
     FlowGraph g(2);
     CHECK_THROWS_AS(dinic(g, -1, 1), std::out_of_range);
@@ -113,6 +124,7 @@ TEST_CASE("Dinic rejects invalid arguments and flow overflow") {
 // Dinic == Edmonds-Karp on random graphs (both mutate, so copy first)
 // ---------------------------------------------------------------------------
 
+/** @test Dinic matches Edmonds-Karp on 300 random graphs. */
 TEST_CASE("Dinic matches Edmonds-Karp on 300 random graphs") {
     std::mt19937 rng(20261113);
     for (int trial = 0; trial < 300; ++trial) {
@@ -136,6 +148,10 @@ TEST_CASE("Dinic matches Edmonds-Karp on 300 random graphs") {
 // Dinic graph-cut seam cost == DP seam cost
 // ---------------------------------------------------------------------------
 
+/**
+ * @brief Assert Dinic seam validity and minimum-cost agreement with DP.
+ * @param e Input row-major energy map.
+ */
 static void check_dinic_against_dp(const EnergyMap& e) {
     const Seam s = find_seam_graphcut_dinic(e);
     REQUIRE(s.size() == size_t(e.height));
@@ -147,11 +163,13 @@ static void check_dinic_against_dp(const EnergyMap& e) {
     CHECK(seam_cost(e, s) == doctest::Approx(seam_cost(e, find_seam_dp(e))));
 }
 
+/** @test Dinic graph cut finds the hand-checked seam. */
 TEST_CASE("Dinic graph cut finds the hand-checked seam") {
     EnergyMap e{3, 3, {5, 1, 0, 1, 9, 9, 5, 1, 9}};
     check_dinic_against_dp(e);
 }
 
+/** @test Dinic graph cut handles tiny maps, zeros and ties. */
 TEST_CASE("Dinic graph cut handles tiny maps, zeros and ties") {
     check_dinic_against_dp(EnergyMap{1, 1, {42}});
     check_dinic_against_dp(EnergyMap{1, 4, {7, 3, 9, 1}});
@@ -160,6 +178,7 @@ TEST_CASE("Dinic graph cut handles tiny maps, zeros and ties") {
     check_dinic_against_dp(EnergyMap{4, 4, std::vector<double>(16, 5)});
 }
 
+/** @test Dinic graph cut agrees with DP on 300 random integer energy maps. */
 TEST_CASE("Dinic graph cut agrees with DP on 300 random integer energy maps") {
     std::mt19937 rng(777);
     for (int trial = 0; trial < 300; ++trial) {
@@ -175,6 +194,7 @@ TEST_CASE("Dinic graph cut agrees with DP on 300 random integer energy maps") {
 // Large case: proves the iterative DFS does not overflow the stack
 // ---------------------------------------------------------------------------
 
+/** @test Dinic graph cut finishes on an image-sized map without stack overflow. */
 TEST_CASE("Dinic graph cut finishes on an image-sized map without stack overflow") {
     const int w = 200, h = 200;
     std::mt19937 rng(2024);

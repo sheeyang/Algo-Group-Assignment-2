@@ -71,6 +71,20 @@ struct FlowGraph {
  * @see reachable_from
  */
 long long edmonds_karp(FlowGraph& g, int s, int t);
+/**
+ * @brief Compute additional flow with level graphs and iterative blocking-flow paths.
+ * @param g Residual graph; mutable references are updated by the solver.
+ * @param s Source node index.
+ * @param t Sink node index.
+ * @return Additional flow sent during this call, zero for an already solved network.
+ * @throws std::out_of_range For invalid terminals.
+ * @throws std::invalid_argument If source equals sink.
+ * @throws std::overflow_error If returned flow cannot fit in long long; earlier pushes remain
+ * applied.
+ * @note The graph is mutated. Optional counters reset after argument validation.
+ * @par Complexity
+ * O(V^2 E) worst-case time and O(V) auxiliary storage; DFS uses an explicit stack.
+ */
 long long dinic(FlowGraph& g, int s, int t);  // implemented by C4
 
 /**
@@ -97,6 +111,21 @@ struct MaxFlowStats {
  * @see edmonds_karp(FlowGraph&, int, int)
  */
 long long edmonds_karp(FlowGraph& g, int s, int t, MaxFlowStats* stats);
+/**
+ * @brief Compute additional flow with level graphs and iterative blocking-flow paths.
+ * @param g Residual graph; mutable references are updated by the solver.
+ * @param s Source node index.
+ * @param t Sink node index.
+ * @param stats Optional reset per-call solver counters.
+ * @return Additional flow sent during this call, zero for an already solved network.
+ * @throws std::out_of_range For invalid terminals.
+ * @throws std::invalid_argument If source equals sink.
+ * @throws std::overflow_error If returned flow cannot fit in long long; earlier pushes remain
+ * applied.
+ * @note The graph is mutated. Optional counters reset after argument validation.
+ * @par Complexity
+ * O(V^2 E) worst-case time and O(V) auxiliary storage; DFS uses an explicit stack.
+ */
 long long dinic(FlowGraph& g, int s, int t, MaxFlowStats* stats);
 
 /**

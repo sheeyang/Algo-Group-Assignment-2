@@ -1,3 +1,7 @@
+/**
+ * @brief ImGui/ImPlot frontend with UI-thread OpenGL resource ownership.
+ * @file main.cpp
+ */
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -26,12 +30,25 @@ constexpr std::array<Algorithm, 4> algorithms{
 constexpr const char* names[]{
     "Dynamic programming", "Greedy", "Graph cut / Edmonds-Karp", "Graph cut / Dinic"};
 
+/**
+ * @brief Copy a path into a fixed-size, null-terminated UI buffer.
+ * @param buffer Fixed-size destination buffer, including its null terminator.
+ * @param path Input/output filesystem path.
+ * @tparam N Capacity including the terminating null byte.
+ * @throws std::runtime_error If the path does not fit.
+ */
 template <size_t N>
 void set_path(char (&buffer)[N], const std::string& path) {
     if (path.size() >= N) throw std::runtime_error("That file path is too long.");
     std::memcpy(buffer, path.c_str(), path.size() + 1);
 }
 
+/**
+ * @brief Validate an output path and create its parent directories.
+ * @param path Input/output filesystem path.
+ * @throws std::runtime_error For an empty path.
+ * @note Filesystem exceptions propagate to the UI error handler.
+ */
 void prepare_output(const char* path) {
     if (!*path) throw std::runtime_error("Enter an output file path.");
     const auto parent = std::filesystem::path(path).parent_path();
@@ -39,18 +56,55 @@ void prepare_output(const char* path) {
 }
 
 // Textures belong to the main thread and die before the OpenGL context does.
+/**
+ * @brief Unique OpenGL texture owner whose operations stay on the UI thread.
+ * @details Uploads preserve caller binding/alignment. Destruction must precede
+ * destruction of the associated current OpenGL context.
+ */
 class Texture {
 public:
+    /**
+     * @brief Initialise unique UI-thread ownership of an OpenGL texture.
+     * @note Copy construction/assignment are intentionally deleted.
+     */
     Texture() = default;
+    /**
+     * @brief Initialise unique UI-thread ownership of an OpenGL texture.
+     * @note Copy construction/assignment are intentionally deleted.
+     */
     Texture(const Texture&) = delete;
+    /**
+     * @brief Prevent copying of uniquely owned OpenGL texture resources.
+     */
     Texture& operator=(const Texture&) = delete;
+    /**
+     * @brief Release the owned GPU texture before its OpenGL context is destroyed.
+     */
     ~Texture() { clear(); }
+    /**
+     * @brief Exchange texture handles without uploading pixels.
+     * @param other Texture whose handle is exchanged.
+     */
     void swap(Texture& other) { std::swap(id_, other.id_); }
+    /**
+     * @brief Delete the owned GPU texture, if any, and reset the handle.
+     * @pre Called on the UI thread with its OpenGL context current.
+     */
     void clear() {
         if (id_) glDeleteTextures(1, &id_);
         id_ = 0;
     }
+    /**
+     * @brief Read the texture handle used by ImGui.
+     * @return ImGui texture identifier; zero when empty.
+     */
     ImTextureID id() const { return static_cast<ImTextureID>(id_); }
+    /**
+     * @brief Upload RGB pixels, restoring prior GL binding and unpack alignment.
+     * @param image Input RGB pixels.
+     * @throws std::runtime_error For invalid texture dimensions or a GL upload error.
+     * @pre Called on the UI thread with a current GL context and valid RGB storage.
+     */
     void assign(const Image& image) {
         GLint limit = 0, binding = 0, alignment = 0;
         glGetIntegerv(GL_MAX_TEXTURE_SIZE, &limit);
@@ -86,6 +140,15 @@ private:
     GLuint id_ = 0;
 };
 
+/**
+ * @brief Display an image fitted within an ImGui child panel without stretching.
+ * @param title Panel heading and ImGui child identifier.
+ * @param texture UI-owned texture backing the displayed image.
+ * @param image Input RGB pixels.
+ * @param size Available panel dimensions.
+ * @param empty Placeholder text when no image is present.
+ * @pre Called within an ImGui frame on the UI thread.
+ */
 void image_panel(const char* title, const Texture& texture, const Image& image,
                  ImVec2 size, const char* empty) {
     ImGui::TextUnformatted(title);
@@ -111,6 +174,10 @@ void image_panel(const char* title, const Texture& texture, const Image& image,
     ImGui::PopStyleColor();
 }
 
+/**
+ * @brief Configure the frontend colours, spacing and widget appearance.
+ * @pre An ImGui context exists on the calling thread.
+ */
 void apply_style() {
     ImGui::StyleColorsDark();
     auto& style = ImGui::GetStyle();
@@ -135,13 +202,34 @@ void apply_style() {
     style.Colors[ImGuiCol_TabSelected] = ImVec4(0.13f, 0.29f, 0.36f, 1);
 }
 
+/**
+ * @brief UI-thread owner of scene data, textures, playback and worker results.
+ * @details Long CPU operations are delegated to Jobs; only completed results
+ * are uploaded to OpenGL. User-visible errors are captured by attempt().
+ */
 class App {
 public:
+    /**
+     * @brief Attach application state to an existing GLFW window.
+     * @param window Borrowed GLFW window; its lifetime must exceed the application state.
+     * @pre window and its current GL context outlive the application and textures.
+     */
     explicit App(GLFWwindow* window) : window_(window) {}
+    /**
+     * @brief Run a UI action and convert standard exceptions into visible error state.
+     * @param action Callable UI operation whose errors become visible status.
+     * @tparam Fn Callable action type.
+     */
     template <class Fn> void attempt(Fn&& action) {
         try { action(); }
         catch (const std::exception& ex) { message_ = ex.what(); error_ = true; }
     }
+    /**
+     * @brief Prepare CPU/GPU image data before replacing the current scene and results.
+     * @param path Input/output filesystem path.
+     * @throws std::runtime_error If a job is active, path is too long or image/texture loading
+     * fails.
+     */
     void load(const std::string& path) {
         if (jobs_.busy()) throw std::runtime_error("Wait for the current job before loading another image.");
         // Prepare both CPU and GPU data before replacing the current image.
@@ -169,6 +257,10 @@ public:
         message_ = "Image loaded. Choose a target size, then resize.";
         error_ = false;
     }
+    /**
+     * @brief Request cooperative cancellation before allowing the window to close.
+     * @note A running seam must finish before cancellation can be observed.
+     */
     void request_close() {
         if (jobs_.busy()) {
             closing_ = true;
@@ -177,10 +269,16 @@ public:
             glfwSetWindowShouldClose(window_, GLFW_FALSE);
         }
     }
+    /**
+     * @brief Poll worker completion and finish a deferred close when safe.
+     */
     void update() {
         attempt([&] { poll(); });
         if (closing_ && !jobs_.busy()) glfwSetWindowShouldClose(window_, GLFW_TRUE);
     }
+    /**
+     * @brief Render controls and workspace tabs for the current ImGui frame.
+     */
     void draw() {
         const auto* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -229,6 +327,11 @@ public:
         ImGui::End();
     }
 private:
+    /**
+     * @brief Transfer a completed worker result into UI-owned textures and state.
+     * @throws std::runtime_error If the worker reported an error.
+     * @note Cancelled resizes retain the previously completed result.
+     */
     void poll() {
         auto ready = jobs_.take_ready();
         if (!ready) return;
@@ -263,6 +366,9 @@ private:
                 : "Benchmark complete. The chart and CSV use the same measurements.";
         }
     }
+    /**
+     * @brief Render image loading, resize settings, progress, cancellation and export controls.
+     */
     void controls() {
         ImGui::PushTextWrapPos();
         ImGui::SeparatorText("1  Open an image");
@@ -343,6 +449,9 @@ private:
         ImGui::EndDisabled();
         ImGui::PopTextWrapPos();
     }
+    /**
+     * @brief Render original/result image panels fitted to available space.
+     */
     void preview() {
         ImGui::TextDisabled("Original and result are fitted to their panels without stretching.");
         if (ImGui::BeginTable("images", 2, ImGuiTableFlags_SizingStretchSame)) {
@@ -357,6 +466,9 @@ private:
             ImGui::EndTable();
         }
     }
+    /**
+     * @brief Replay seam history with cached state and render removal controls.
+     */
     void playback() {
         if (history_.empty()) {
             ImGui::TextWrapped("Resize an image to record the seams. A run that removes no pixels has no steps.");
@@ -406,6 +518,9 @@ private:
         image_panel("Step frame", step_texture_, step_image_,
             ImVec2(0, std::max(150.0f, ImGui::GetContentRegionAvail().y - 35)), "");
     }
+    /**
+     * @brief Render benchmark selection, measured plots, table and CSV export controls.
+     */
     void benchmark() {
         ImGui::TextWrapped("Compare the same number of vertical seam removals at several image sizes.");
         ImGui::BeginDisabled(original_.width == 0 || jobs_.busy() || closing_);
@@ -510,6 +625,13 @@ private:
 };
 }  // namespace
 
+/**
+ * @brief ImGui/ImPlot frontend with UI-thread OpenGL resource ownership.
+ * @param argc Argument count, including the executable name.
+ * @param argv Null-terminated command-line argument strings.
+ * @return 0 on normal shutdown/help, 1 if graphics initialisation fails.
+ * @note Run benchmark/evidence tools from the repository root.
+ */
 int main(int argc, char** argv) {
     if (argc > 1 && std::string(argv[1]) == "--help") {
         std::puts("Usage: seamgui [image.png]\nOpen an image by path or drag-and-drop, select a target size, and resize.");

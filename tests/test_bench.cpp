@@ -1,3 +1,7 @@
+/**
+ * @brief Scaling, CSV formatting, benchmark medians and budget regression tests.
+ * @file test_bench.cpp
+ */
 #include <random>
 #include <sstream>
 #include <stdexcept>
@@ -8,6 +12,13 @@
 
 using namespace seam;
 
+/**
+ * @brief Build deterministic pseudo-random RGB pixels for tests.
+ * @param w Image/map width.
+ * @param h Image/map height.
+ * @param seed Fixed seed for reproducible fixture pixels.
+ * @return Owned image generated from the seed or supplied RNG.
+ */
 static Image random_image(int w, int h, unsigned seed) {
     std::mt19937 rng(seed);
     std::uniform_int_distribution<int> val(0, 255);
@@ -16,6 +27,12 @@ static Image random_image(int w, int h, unsigned seed) {
     return img;
 }
 
+/**
+ * @brief Compare a string prefix for CSV/header assertions.
+ * @param s Input text to parse or compare.
+ * @param prefix Expected leading substring.
+ * @return True if the prefix matches.
+ */
 static bool starts_with(const std::string& s, const std::string& prefix) {
     return s.compare(0, prefix.size(), prefix) == 0;
 }
@@ -24,6 +41,7 @@ static bool starts_with(const std::string& s, const std::string& prefix) {
 // Algorithm names
 // ---------------------------------------------------------------------------------------------
 
+/** @test algorithm_name and parse_algorithm are inverses. */
 TEST_CASE("algorithm_name and parse_algorithm are inverses") {
     for (Algorithm a : {Algorithm::DP, Algorithm::Greedy, Algorithm::GraphCutEK, Algorithm::GraphCutDinic})
         CHECK(parse_algorithm(algorithm_name(a)) == a);
@@ -37,6 +55,7 @@ TEST_CASE("algorithm_name and parse_algorithm are inverses") {
 // scale_image
 // ---------------------------------------------------------------------------------------------
 
+/** @test scale_image produces the rounded target size. */
 TEST_CASE("scale_image produces the rounded target size") {
     Image img = random_image(40, 30, 1);
     Image half = scale_image(img, 0.5);
@@ -50,11 +69,13 @@ TEST_CASE("scale_image produces the rounded target size") {
     CHECK(tiny.height == 1);
 }
 
+/** @test scale_image at scale 1 returns the same pixels. */
 TEST_CASE("scale_image at scale 1 returns the same pixels") {
     Image img = random_image(7, 5, 2);
     CHECK(scale_image(img, 1.0).rgb == img.rgb);
 }
 
+/** @test scale_image averages the pixels each output pixel covers. */
 TEST_CASE("scale_image averages the pixels each output pixel covers") {
     Image img(2, 2);
     const uint8_t v[4] = {0, 10, 20, 31};
@@ -66,6 +87,7 @@ TEST_CASE("scale_image averages the pixels each output pixel covers") {
     CHECK(int(one.px(0, 0)[0]) == 15);  // (0 + 10 + 20 + 31) / 4 = 15.25, rounded
 }
 
+/** @test scale_image rejects bad input. */
 TEST_CASE("scale_image rejects bad input") {
     Image img = random_image(4, 4, 3);
     CHECK_THROWS_AS(scale_image(img, 0.0), std::invalid_argument);
@@ -78,6 +100,7 @@ TEST_CASE("scale_image rejects bad input") {
 // run_benchmark
 // ---------------------------------------------------------------------------------------------
 
+/** @test run_benchmark gives one row per algorithm and scale, smallest scale first. */
 TEST_CASE("run_benchmark gives one row per algorithm and scale, smallest scale first") {
     Image img = random_image(30, 20, 4);
     auto rows = run_benchmark(img, {Algorithm::DP, Algorithm::Greedy}, {1.0, 0.5}, 5, 3);
@@ -96,6 +119,7 @@ TEST_CASE("run_benchmark gives one row per algorithm and scale, smallest scale f
     }
 }
 
+/** @test run_benchmark total_cost equals the sum of the removed seams' costs. */
 TEST_CASE("run_benchmark total_cost equals the sum of the removed seams' costs") {
     // Recompute the DP run by hand: energy map, DP seam, add its cost, remove, repeat.
     Image img = random_image(25, 18, 5);
@@ -113,6 +137,7 @@ TEST_CASE("run_benchmark total_cost equals the sum of the removed seams' costs")
     CHECK(rows[0].total_cost == doctest::Approx(expected));
 }
 
+/** @test run_benchmark: on the first seam greedy never beats DP, and graph cut ties it. */
 TEST_CASE("run_benchmark: on the first seam greedy never beats DP, and graph cut ties it") {
     // With one seam every algorithm sees the same energy map, so the costs are directly comparable.
     for (unsigned seed = 10; seed < 20; ++seed) {
@@ -126,12 +151,14 @@ TEST_CASE("run_benchmark: on the first seam greedy never beats DP, and graph cut
     }
 }
 
+/** @test run_benchmark caps the seam count at width - 1. */
 TEST_CASE("run_benchmark caps the seam count at width - 1") {
     auto rows = run_benchmark(random_image(4, 3, 6), {Algorithm::DP}, {1.0}, 10, 1);
     REQUIRE(rows.size() == 1);
     CHECK(rows[0].seams == 3);
 }
 
+/** @test run_benchmark skips a size where no seam can be removed. */
 TEST_CASE("run_benchmark skips a size where no seam can be removed") {
     std::vector<std::string> skipped;
     auto rows = run_benchmark(random_image(3, 3, 7), {Algorithm::DP}, {0.2}, 2, 1, 0, &skipped);
@@ -140,6 +167,7 @@ TEST_CASE("run_benchmark skips a size where no seam can be removed") {
     CHECK(skipped[0].find("1x1") != std::string::npos);
 }
 
+/** @test run_benchmark reports every algorithm as a row or a skip, never crashes. */
 TEST_CASE("run_benchmark reports every algorithm as a row or a skip, never crashes") {
     // Algorithms still under construction throw std::logic_error; they must be skipped, not fatal.
     // Written so it stays true when they are implemented.
@@ -157,6 +185,7 @@ TEST_CASE("run_benchmark reports every algorithm as a row or a skip, never crash
     }
 }
 
+/** @test run_benchmark: exceeding the time budget skips the larger sizes. */
 TEST_CASE("run_benchmark: exceeding the time budget skips the larger sizes") {
     std::vector<std::string> skipped;
     // A budget of 1 nanosecond: every run is over it. With one seam the run is still complete, so
@@ -168,6 +197,7 @@ TEST_CASE("run_benchmark: exceeding the time budget skips the larger sizes") {
     CHECK(starts_with(skipped[0], "dp skipped at 20x16"));
 }
 
+/** @test run_benchmark: a run over the time budget is stopped early and gets no row. */
 TEST_CASE("run_benchmark: a run over the time budget is stopped early and gets no row") {
     std::vector<std::string> skipped;
     // Over budget after the first of 4 seams: the run stops, so there is no full measurement.
@@ -179,6 +209,7 @@ TEST_CASE("run_benchmark: a run over the time budget is stopped early and gets n
     CHECK(starts_with(skipped[1], "dp skipped at 20x16"));
 }
 
+/** @test run_benchmark rejects bad arguments. */
 TEST_CASE("run_benchmark rejects bad arguments") {
     Image img = random_image(8, 8, 10);
     CHECK_THROWS_AS(run_benchmark(Image{}, {Algorithm::DP}, {1.0}, 1, 1), std::invalid_argument);
@@ -193,6 +224,7 @@ TEST_CASE("run_benchmark rejects bad arguments") {
 // write_csv
 // ---------------------------------------------------------------------------------------------
 
+/** @test write_csv writes a header and one line per row. */
 TEST_CASE("write_csv writes a header and one line per row") {
     std::vector<BenchRow> rows = {
         {"dp", 400, 266, 20, 12.5, 3.25, 1234.5},

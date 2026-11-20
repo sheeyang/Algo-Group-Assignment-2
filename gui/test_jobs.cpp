@@ -1,3 +1,7 @@
+/**
+ * @brief Headless regression tests for GUI worker results, cancellation and lifetime.
+ * @file test_jobs.cpp
+ */
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 #include "jobs.h"
@@ -6,6 +10,12 @@
 #include <thread>
 
 namespace {
+/**
+ * @brief Create a deterministic RGB fixture for GUI-worker tests.
+ * @param width Image width in pixels.
+ * @param height Image height in pixels.
+ * @return Owned image with the requested dimensions.
+ */
 seam::Image fixture(int width = 13, int height = 9) {
     seam::Image image(width, height);
     for (size_t i = 0; i < image.rgb.size(); ++i)
@@ -13,6 +23,12 @@ seam::Image fixture(int width = 13, int height = 9) {
     return image;
 }
 
+/**
+ * @brief Poll a GUI worker with a bounded test deadline.
+ * @param jobs Worker controller to poll until its result is ready.
+ * @return The consumed JobResult.
+ * @throws std::runtime_error If the worker misses the test deadline.
+ */
 seam::gui::JobResult finish(seam::gui::Jobs& jobs) {
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
     do {
@@ -23,6 +39,7 @@ seam::gui::JobResult finish(seam::gui::Jobs& jobs) {
 }
 }  // namespace
 
+/** @test GUI resize matches seamlib and records mixed-direction seams and cost. */
 TEST_CASE("GUI resize matches seamlib and records mixed-direction seams and cost") {
     const auto image = fixture();
     double expected_cost = 0;
@@ -51,6 +68,7 @@ TEST_CASE("GUI resize matches seamlib and records mixed-direction seams and cost
     CHECK_FALSE(jobs.take_ready().has_value());
 }
 
+/** @test GUI cancellation publishes no partial resize and the worker can be reused. */
 TEST_CASE("GUI cancellation publishes no partial resize and the worker can be reused") {
     seam::gui::Jobs jobs;
     jobs.start_resize(fixture(512, 384), 1, 1, seam::Algorithm::DP);
@@ -66,6 +84,7 @@ TEST_CASE("GUI cancellation publishes no partial resize and the worker can be re
     CHECK(unchanged.history.empty());
 }
 
+/** @test GUI worker returns algorithm and input errors instead of throwing on the UI thread. */
 TEST_CASE("GUI worker returns algorithm and input errors instead of throwing on the UI thread") {
     seam::gui::Jobs jobs;
     jobs.start_resize(fixture(), 0, 5, seam::Algorithm::DP);
@@ -76,6 +95,7 @@ TEST_CASE("GUI worker returns algorithm and input errors instead of throwing on 
     CHECK(finish(jobs).error.empty());
 }
 
+/** @test GUI benchmark preserves seamlib measurements and exports those same rows. */
 TEST_CASE("GUI benchmark preserves seamlib measurements and exports those same rows") {
     const auto image = fixture();
     seam::gui::BenchmarkOptions options;
@@ -109,6 +129,7 @@ TEST_CASE("GUI benchmark preserves seamlib measurements and exports those same r
     CHECK_FALSE(jobs.busy());
 }
 
+/** @test GUI worker destruction cancels and joins an active resize. */
 TEST_CASE("GUI worker destruction cancels and joins an active resize") {
     seam::gui::Jobs jobs;
     jobs.start_resize(fixture(512, 384), 1, 1, seam::Algorithm::DP);

@@ -1,3 +1,7 @@
+/**
+ * @brief Measured DP/EK/Dinic searches with phase counts and cooperative time budgets.
+ * @file bench_maxflow.cpp
+ */
 // C4: reproducible first-seam timings and actual max-flow operation counts.
 // Run from the repository root: bench_maxflow <output-directory> [--large]
 #include <algorithm>
@@ -22,10 +26,23 @@ namespace {
 MaxFlowStats last_stats;
 double last_solver_ms = 0;
 
+/**
+ * @brief Measure elapsed wall-clock time from a steady-clock timestamp.
+ * @param start Steady-clock timestamp marking measurement start.
+ * @return Elapsed milliseconds.
+ */
 double milliseconds(Clock::time_point start) {
     return std::chrono::duration<double, std::milli>(Clock::now() - start).count();
 }
 
+/**
+ * @brief Run EK while recording its solver-only duration and path counts.
+ * @param graph Residual network updated by the measured solver.
+ * @param source Source node index.
+ * @param sink Sink node index.
+ * @return Additional maximum flow.
+ * @note Updates file-local measurement state; benchmark execution is serial.
+ */
 long long measured_ek(FlowGraph& graph, int source, int sink) {
     const auto start = Clock::now();
     const auto flow = edmonds_karp(graph, source, sink, &last_stats);
@@ -33,6 +50,14 @@ long long measured_ek(FlowGraph& graph, int source, int sink) {
     return flow;
 }
 
+/**
+ * @brief Run Dinic while recording its solver-only duration and phase/path counts.
+ * @param graph Residual network updated by the measured solver.
+ * @param source Source node index.
+ * @param sink Sink node index.
+ * @return Additional maximum flow.
+ * @note Updates file-local measurement state; benchmark execution is serial.
+ */
 long long measured_dinic(FlowGraph& graph, int source, int sink) {
     const auto start = Clock::now();
     const auto flow = dinic(graph, source, sink, &last_stats);
@@ -40,11 +65,20 @@ long long measured_dinic(FlowGraph& graph, int source, int sink) {
     return flow;
 }
 
+/** @brief One validated search's total/solver milliseconds, cost and counters. */
 struct Measurement {
     double ms, solver_ms, cost;
     MaxFlowStats stats;
 };
 
+/**
+ * @brief Time one seam search and validate its cost against a DP reference.
+ * @param energy Energy map defining seam costs and dimensions.
+ * @param algorithm Seam-finding algorithm.
+ * @param reference DP seam cost on the identical input energy map.
+ * @return End-to-end finder duration, solver duration, seam cost and counters.
+ * @throws std::runtime_error If seam validity or reference-cost agreement fails.
+ */
 Measurement measure(const EnergyMap& energy, Algorithm algorithm, double reference) {
     last_stats = {};
     last_solver_ms = 0;
@@ -64,6 +98,10 @@ Measurement measure(const EnergyMap& energy, Algorithm algorithm, double referen
     return {elapsed, last_solver_ms, cost, last_stats};
 }
 
+/**
+ * @brief Write the max-flow benchmark CSV header and set numeric precision.
+ * @param out Destination output stream.
+ */
 void header(std::ostream& out) {
     out << "image,algorithm,width,height,time_ms,solver_ms,phases,augmentations,"
            "seam_cost,dp_reference_cost,cost_difference,repeats,notes\n";
@@ -72,6 +110,17 @@ void header(std::ostream& out) {
 
 // The budget is cooperative: a running max-flow call must finish. If any run
 // exceeds it, stop repeating and skip that algorithm's subsequent larger sizes.
+/**
+ * @brief Repeat a seam measurement, emit the median run and apply a cooperative budget.
+ * @param out Destination output stream.
+ * @param image Image label written into measurement output.
+ * @param energy Energy map defining seam costs and dimensions.
+ * @param algorithm Seam-finding algorithm.
+ * @param repeats Number of fresh repeated runs.
+ * @param budget_ms Cooperative time limit in milliseconds; nonpositive disables it.
+ * @return True if a measured run exceeded the budget and larger sizes should be skipped.
+ * @note Timings exclude energy calculation. A running solver is not interrupted.
+ */
 bool benchmark(std::ostream& out, const std::string& image, const EnergyMap& energy,
                Algorithm algorithm, int repeats, double budget_ms) {
     const double reference = seam_cost(energy, find_seam_dp(energy));
@@ -100,6 +149,12 @@ bool benchmark(std::ostream& out, const std::string& image, const EnergyMap& ene
     return over_budget;
 }
 
+/**
+ * @brief Nearest-sample the landscape into a 1000x700 acceptance input.
+ * @param source Source node index.
+ * @return Owned RGB test image.
+ * @pre source is nonempty with consistent RGB storage.
+ */
 Image large_image(const Image& source) {
     Image out(1000, 700);
     for (int y = 0; y < out.height; ++y)
@@ -111,6 +166,13 @@ Image large_image(const Image& source) {
 }
 }  // namespace
 
+/**
+ * @brief Measured DP/EK/Dinic searches with phase counts and cooperative time budgets.
+ * @param argc Argument count, including the executable name.
+ * @param argv Null-terminated command-line argument strings.
+ * @return Zero on normal completion; program-specific validation errors are reported or propagate.
+ * @note Run benchmark/evidence tools from the repository root.
+ */
 int main(int argc, char** argv) {
     try {
 #ifndef NDEBUG

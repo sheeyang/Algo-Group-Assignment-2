@@ -1,3 +1,7 @@
+/**
+ * @brief Original-pixel tracking, seam overlays and replay equivalence tests.
+ * @file test_visualize.cpp
+ */
 // C6 visualisation (7a): seams mapped back to original coordinates, step rendering.
 #include <random>
 
@@ -7,6 +11,7 @@
 
 using namespace seam;
 
+/** @test seams map back to original coordinates; no two seams share a pixel. */
 TEST_CASE("seams map back to original coordinates; no two seams share a pixel") {
     std::mt19937 rng(99);
     for (int iter = 0; iter < 30; ++iter) {

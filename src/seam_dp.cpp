@@ -1,3 +1,7 @@
+/**
+ * @brief Full-table DP seam finding, seam cost and vertical seam removal.
+ * @file seam_dp.cpp
+ */
 #include <algorithm>
 #include <stdexcept>
 
@@ -5,6 +9,15 @@
 
 namespace seam {
 
+/**
+ * @brief Sum original energy values along a vertical seam.
+ * @param e Input row-major energy map.
+ * @param s Selected seam in current image coordinates.
+ * @return Sum of e.at(s[y], y) over all rows.
+ * @pre s contains one valid column per row; inputs are not validated here.
+ * @par Complexity
+ * O(H) time and O(1) auxiliary storage.
+ */
 double seam_cost(const EnergyMap& e, const Seam& s) {
     double c = 0;
     for (int y = 0; y < e.height; ++y) c += e.at(s[y], y);
@@ -31,6 +44,14 @@ double seam_cost(const EnergyMap& e, const Seam& s) {
 // smallest column in the last row, then in the row above, and so on (leftmost, judged from the
 // bottom upward). The table fill is unaffected by ties because it stores only costs; the rule is
 // applied in the two places where a choice is made: the last-row minimum and each backtracking step.
+/**
+ * @brief Find an optimal vertical seam using a full cumulative-cost table.
+ * @param e Input row-major energy map.
+ * @return Minimum-cost seam; ties prefer leftmost columns from the bottom upward.
+ * @throws std::invalid_argument For an empty or inconsistent map.
+ * @par Complexity
+ * O(W H) time and storage.
+ */
 Seam find_seam_dp(const EnergyMap& e) {
     const int W = e.width, H = e.height;
     if (W < 1 || H < 1) throw std::invalid_argument("find_seam_dp: energy map is empty");
@@ -74,6 +95,16 @@ Seam find_seam_dp(const EnergyMap& e) {
     return s;
 }
 
+/**
+ * @brief Copy every row while omitting its selected seam pixel.
+ * @param img RGB image with storage matching its dimensions.
+ * @param s Selected seam in current image coordinates.
+ * @return New image one column narrower; input remains unchanged.
+ * @throws std::invalid_argument For zero width, wrong seam length or out-of-range columns.
+ * @note Connectivity is assumed, not validated; width one produces a zero-width result.
+ * @par Complexity
+ * O(W H) time and output storage.
+ */
 Image remove_vertical_seam(const Image& img, const Seam& s) {
     if (img.width < 1) throw std::invalid_argument("remove_vertical_seam: image has no columns");
     if (int(s.size()) != img.height)

@@ -1,3 +1,7 @@
+/**
+ * @brief Budget-aware repeated seam benchmarks and consistent median selection.
+ * @file bench.cpp
+ */
 #include "bench.h"
 
 #include <algorithm>
@@ -10,6 +14,12 @@
 
 namespace seam {
 
+/**
+ * @brief Convert an algorithm enum to its stable CLI/CSV name.
+ * @param a Seam-finding algorithm to dispatch.
+ * @return Static name string, such as dp, greedy, ek or dinic.
+ * @throws std::invalid_argument For an unknown enum value.
+ */
 const char* algorithm_name(Algorithm a) {
     switch (a) {
         case Algorithm::DP: return "dp";
@@ -20,12 +30,27 @@ const char* algorithm_name(Algorithm a) {
     throw std::invalid_argument("algorithm_name: unknown algorithm");
 }
 
+/**
+ * @brief Parse a case-sensitive CLI algorithm name.
+ * @param name Case-sensitive algorithm name.
+ * @return Matching algorithm enum.
+ * @throws std::invalid_argument For an unknown name.
+ */
 Algorithm parse_algorithm(const std::string& name) {
     for (Algorithm a : {Algorithm::DP, Algorithm::Greedy, Algorithm::GraphCutEK, Algorithm::GraphCutDinic})
         if (name == algorithm_name(a)) return a;
     throw std::invalid_argument("unknown algorithm: " + name + " (expected dp, greedy, ek or dinic)");
 }
 
+/**
+ * @brief Box-average source blocks into a smaller benchmark input.
+ * @param img RGB image with storage matching its dimensions.
+ * @param scale Ordinary image scale in (0,1].
+ * @return Owned image with rounded scaled dimensions, each at least one pixel.
+ * @throws std::invalid_argument For an empty image or scale outside (0,1].
+ * @pre RGB storage matches dimensions.
+ * @note This is ordinary scaling, not seam carving; the input is unchanged.
+ */
 Image scale_image(const Image& img, double scale) {
     if (img.width < 1 || img.height < 1) throw std::invalid_argument("scale_image: image is empty");
     if (!(scale > 0 && scale <= 1)) throw std::invalid_argument("scale_image: scale must be in (0, 1]");
@@ -59,10 +84,21 @@ namespace {
 
 using Clock = std::chrono::steady_clock;
 
+/**
+ * @brief Measure elapsed wall-clock time from a steady-clock timestamp.
+ * @param t0 Steady-clock start timestamp.
+ * @return Elapsed milliseconds.
+ */
 double ms_since(Clock::time_point t0) {
     return std::chrono::duration<double, std::milli>(Clock::now() - t0).count();
 }
 
+/**
+ * @brief Dispatch an energy map to the requested seam finder.
+ * @param e Input row-major energy map.
+ * @param a Seam-finding algorithm to dispatch.
+ * @return Selected vertical seam; finder exceptions propagate.
+ */
 Seam find(const EnergyMap& e, Algorithm a) {
     switch (a) {
         case Algorithm::DP: return find_seam_dp(e);
@@ -73,6 +109,7 @@ Seam find(const EnergyMap& e, Algorithm a) {
     throw std::invalid_argument("unknown algorithm");
 }
 
+/** @brief One timed resize attempt, possibly stopped at a seam boundary. */
 struct Run {
     double ms = 0, find_ms = 0, cost = 0;
     int done = 0;  // seams removed; less than requested when the run was stopped by the budget
@@ -81,6 +118,16 @@ struct Run {
 // One timed run: remove `seams` vertical seams from `start`. This is the vertical half of the
 // resize loop (resize.cpp), written out so the seam-finding time can be measured on its own.
 // With budget_ms > 0 the run stops early once it has taken longer than that.
+/**
+ * @brief Time a fresh sequence of vertical seam removals.
+ * @param start Image copied at the start of each timed resize.
+ * @param a Seam-finding algorithm to dispatch.
+ * @param seams Requested vertical seam removals.
+ * @param budget_ms Cooperative time limit in milliseconds; nonpositive disables it.
+ * @return Completed seam count, total cost and whole-run/finder milliseconds.
+ * @pre start is valid and seams is within 1..width-1.
+ * @note A positive budget is checked after each completed seam; it cannot interrupt max-flow.
+ */
 Run run_once(const Image& start, Algorithm a, int seams, double budget_ms) {
     Run r;
     const Clock::time_point t0 = Clock::now();
@@ -99,12 +146,33 @@ Run run_once(const Image& start, Algorithm a, int seams, double budget_ms) {
     return r;
 }
 
+/**
+ * @brief Format image dimensions for benchmark diagnostic messages.
+ * @param img RGB image with storage matching its dimensions.
+ * @return Width and height joined by x.
+ */
 std::string size_str(const Image& img) {
     return std::to_string(img.width) + "x" + std::to_string(img.height);
 }
 
 }  // namespace
 
+/**
+ * @brief Run algorithms at ascending image scales and select median complete runs.
+ * @param img RGB image with storage matching its dimensions.
+ * @param algos Algorithms to measure.
+ * @param scales Requested input scales in (0,1].
+ * @param seams Requested vertical seam removals.
+ * @param repeats Number of fresh repeated runs.
+ * @param budget_ms Cooperative time limit in milliseconds; nonpositive disables it.
+ * @param skipped Optional destination for skip/budget diagnostic messages.
+ * @return One row per completed algorithm/scale; lower median for even repeat counts.
+ * @throws std::invalid_argument For empty inputs/lists, invalid scales or nonpositive seam/repeat
+ * counts.
+ * @note Time budgets are cooperative at seam boundaries. Over-budget algorithms skip larger sizes.
+ * A partially completed run produces a note, not a CSV row. find_ms and cost come from the same
+ * selected total-time run.
+ */
 std::vector<BenchRow> run_benchmark(const Image& img, const std::vector<Algorithm>& algos,
                                     const std::vector<double>& scales, int seams, int repeats,
                                     double budget_ms, std::vector<std::string>* skipped) {
@@ -183,6 +251,13 @@ std::vector<BenchRow> run_benchmark(const Image& img, const std::vector<Algorith
     return rows;
 }
 
+/**
+ * @brief Serialise benchmark rows with a header and three decimal places.
+ * @param rows Completed benchmark rows.
+ * @param out Destination output stream.
+ * @note Formatting is prepared in a separate stream; caller formatting flags are preserved. Output
+ * stream failure state remains for the caller to inspect.
+ */
 void write_csv(const std::vector<BenchRow>& rows, std::ostream& out) {
     // Format in a separate stream so the caller's stream flags are left alone.
     std::ostringstream s;

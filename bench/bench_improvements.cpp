@@ -1,13 +1,35 @@
+/**
+ * @brief DP experiment runner with warm-up, median timings and heap tracking.
+ * @file bench_improvements.cpp
+ */
 // Benchmark for assignment 5d. Writes results/improvements_{memory,dp,incremental,threads}.csv.
 // Usage: bench_improvements <out_dir>
 #if defined(_WIN32)
 #include <malloc.h>
+/**
+ * @brief Query the allocator usable size of a live allocation for heap measurements.
+ * @param p Allocator-owned memory pointer.
+ * @return Platform-reported allocated byte count, which may exceed requested bytes.
+ * @pre p is a live allocation from the compatible C allocator.
+ */
 static size_t usable_size(void* p) { return _msize(p); }
 #elif defined(__APPLE__)
 #include <malloc/malloc.h>
+/**
+ * @brief Query the allocator usable size of a live allocation for heap measurements.
+ * @param p Allocator-owned memory pointer.
+ * @return Platform-reported allocated byte count, which may exceed requested bytes.
+ * @pre p is a live allocation from the compatible C allocator.
+ */
 static size_t usable_size(void* p) { return malloc_size(p); }
 #else
 #include <malloc.h>
+/**
+ * @brief Query the allocator usable size of a live allocation for heap measurements.
+ * @param p Allocator-owned memory pointer.
+ * @return Platform-reported allocated byte count, which may exceed requested bytes.
+ * @pre p is a live allocation from the compatible C allocator.
+ */
 static size_t usable_size(void* p) { return malloc_usable_size(p); }
 #endif
 
@@ -28,25 +50,60 @@ static size_t usable_size(void* p) { return malloc_usable_size(p); }
 
 // ---- heap tracking: peak live bytes between reset_peak() and now.
 static std::atomic<long long> g_live{0}, g_peak{0};
+/**
+ * @brief Account for an allocation and update the atomic high-water mark.
+ * @param p Allocator-owned memory pointer.
+ */
 static void track(void* p) {
     long long now = g_live += (long long)usable_size(p);
     long long pk = g_peak.load();
     while (now > pk && !g_peak.compare_exchange_weak(pk, now)) {}
 }
+/**
+ * @brief Allocate and account for heap storage in this benchmark executable.
+ * @param n Requested allocation size in bytes.
+ * @return Non-null allocated storage.
+ * @throws std::bad_alloc If malloc fails.
+ */
 void* operator new(std::size_t n) {
     void* p = std::malloc(n ? n : 1);
     if (!p) throw std::bad_alloc();
     track(p);
     return p;
 }
+/**
+ * @brief Subtract live allocation bytes and free benchmark heap storage.
+ * @param p Allocator-owned memory pointer.
+ * @note Null pointers are ignored; the sized overload delegates to the unsized overload.
+ */
 void operator delete(void* p) noexcept { if (p) { g_live -= (long long)usable_size(p); std::free(p); } }
+/**
+ * @brief Subtract live allocation bytes and free benchmark heap storage.
+ * @param p Allocator-owned memory pointer.
+ * @note Null pointers are ignored; the sized overload delegates to the unsized overload.
+ */
 void operator delete(void* p, std::size_t) noexcept { operator delete(p); }
+/**
+ * @brief Reset the benchmark high-water mark to current live heap usage.
+ */
 static void reset_peak() { g_peak = g_live.load(); }
+/**
+ * @brief Read peak heap usage relative to a caller-recorded baseline.
+ * @param base Previously recorded live-byte baseline.
+ * @return Additional peak live bytes since the baseline.
+ */
 static long long peak_extra(long long base) { return g_peak.load() - base; }
 
 using namespace seam;
 using Clock = std::chrono::steady_clock;
 
+/**
+ * @brief Generate a fixed-seed scene of gradients, bands and noise for benchmarks.
+ * @param W Full row width.
+ * @param H Number of rows.
+ * @param seed Fixed seed for reproducible fixture pixels.
+ * @return Owned RGB benchmark image.
+ */
 static Image synthetic_image(int W, int H, unsigned seed) {
     // Smooth gradients + sinusoids + noise: some strong edges, some flat regions.
     std::mt19937 rng(seed);
@@ -62,11 +119,24 @@ static Image synthetic_image(int W, int H, unsigned seed) {
     return im;
 }
 
+/**
+ * @brief Select the middle value after sorting a timing-sample copy.
+ * @param v Nonempty timing-sample vector, copied for sorting.
+ * @return Middle sample; for an even count, the upper middle sample.
+ * @pre v is nonempty.
+ */
 static double median(std::vector<double> v) {
     std::sort(v.begin(), v.end());
     return v[v.size() / 2];
 }
 
+/**
+ * @brief Warm up a callable, then time repeated invocations.
+ * @param reps Number of timed repetitions after warm-up.
+ * @param f Callable whose runtime is measured.
+ * @return Median elapsed milliseconds, excluding the warm-up call.
+ * @pre reps is positive and f is callable.
+ */
 static double time_ms(int reps, const std::function<void()>& f) {
     f();  // warm-up
     std::vector<double> t;
@@ -80,6 +150,13 @@ static double time_ms(int reps, const std::function<void()>& f) {
 
 struct Size { int w, h, k, reps; const char* name; };
 
+/**
+ * @brief DP experiment runner with warm-up, median timings and heap tracking.
+ * @param argc Argument count, including the executable name.
+ * @param argv Null-terminated command-line argument strings.
+ * @return Zero on normal completion; program-specific validation errors are reported or propagate.
+ * @note Run benchmark/evidence tools from the repository root.
+ */
 int main(int argc, char** argv) {
     const std::string out = argc > 1 ? argv[1] : "results";
     const unsigned cores = std::thread::hardware_concurrency();

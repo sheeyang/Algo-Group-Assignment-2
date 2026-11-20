@@ -1,3 +1,7 @@
+/**
+ * @brief Iterative Dinic max-flow with level graphs and current-arc pruning.
+ * @file maxflow_dinic.cpp
+ */
 #include "maxflow.h"
 
 #include <algorithm>
@@ -12,6 +16,12 @@ namespace {
 // Reuse the same node checks as the rest of maxflow so Dinic rejects the same
 // bad arguments as edmonds_karp. Kept local because maxflow.cpp's copy is
 // static; duplicating two lines is cheaper than widening the public surface.
+/**
+ * @brief Validate a node index before accessing graph storage.
+ * @param g Residual graph; mutable references are updated by the solver.
+ * @param u Node index to validate.
+ * @throws std::out_of_range If u is negative or outside the graph.
+ */
 void check_node(const FlowGraph& g, int u) {
     if (u < 0 || size_t(u) >= g.adj.size())
         throw std::out_of_range("FlowGraph: node outside graph");
@@ -21,6 +31,16 @@ void check_node(const FlowGraph& g, int u) {
 // capacity. level[v] is the fewest such edges from s to v, or -1 if v is
 // unreachable. Returns true when t became reachable, i.e. another phase is
 // possible.
+/**
+ * @brief BFS positive-capacity edges to build Dinic distance levels.
+ * @param g Residual graph; mutable references are updated by the solver.
+ * @param s Source node index.
+ * @param t Sink node index.
+ * @param level Output distances from the source; unreachable entries become -1.
+ * @param bfs_queue Reusable queue storage covering every node.
+ * @return True if the sink is reachable and another blocking-flow phase is possible.
+ * @pre Terminals are validated and level/queue buffers cover all graph nodes.
+ */
 bool build_levels(const FlowGraph& g, int s, int t, std::vector<int>& level,
                   std::vector<int>& bfs_queue) {
     std::fill(level.begin(), level.end(), -1);
@@ -51,10 +71,39 @@ bool build_levels(const FlowGraph& g, int s, int t, std::vector<int>& level,
 // The DFS is written iteratively with an explicit stack: a vertical seam path
 // can be as long as the image is tall, so a recursive DFS would risk a stack
 // overflow on a real image (see docs/tasks/C4-dinic.md).
+/**
+ * @brief Compute additional flow with level graphs and iterative blocking-flow paths.
+ * @param g Residual graph; mutable references are updated by the solver.
+ * @param s Source node index.
+ * @param t Sink node index.
+ * @return Additional flow sent during this call, zero for an already solved network.
+ * @throws std::out_of_range For invalid terminals.
+ * @throws std::invalid_argument If source equals sink.
+ * @throws std::overflow_error If returned flow cannot fit in long long; earlier pushes remain
+ * applied.
+ * @note The graph is mutated. Optional counters reset after argument validation.
+ * @par Complexity
+ * O(V^2 E) worst-case time and O(V) auxiliary storage; DFS uses an explicit stack.
+ */
 long long dinic(FlowGraph& g, int s, int t) {
     return dinic(g, s, t, nullptr);
 }
 
+/**
+ * @brief Compute additional flow with level graphs and iterative blocking-flow paths.
+ * @param g Residual graph; mutable references are updated by the solver.
+ * @param s Source node index.
+ * @param t Sink node index.
+ * @param stats Optional reset per-call solver counters.
+ * @return Additional flow sent during this call, zero for an already solved network.
+ * @throws std::out_of_range For invalid terminals.
+ * @throws std::invalid_argument If source equals sink.
+ * @throws std::overflow_error If returned flow cannot fit in long long; earlier pushes remain
+ * applied.
+ * @note The graph is mutated. Optional counters reset after argument validation.
+ * @par Complexity
+ * O(V^2 E) worst-case time and O(V) auxiliary storage; DFS uses an explicit stack.
+ */
 long long dinic(FlowGraph& g, int s, int t, MaxFlowStats* stats) {
     check_node(g, s);
     check_node(g, t);

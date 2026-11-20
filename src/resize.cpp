@@ -1,9 +1,19 @@
+/**
+ * @brief Alternating vertical/horizontal seam-removal pipeline.
+ * @file resize.cpp
+ */
 #include "resize.h"
 
 #include <stdexcept>
 
 namespace seam {
 
+/**
+ * @brief Dispatch an energy map to the requested seam finder.
+ * @param e Input row-major energy map.
+ * @param a Seam-finding algorithm to dispatch.
+ * @return Selected vertical seam; finder exceptions propagate.
+ */
 static Seam find(const EnergyMap& e, Algorithm a) {
     switch (a) {
         case Algorithm::DP: return find_seam_dp(e);
@@ -14,6 +24,20 @@ static Seam find(const EnergyMap& e, Algorithm a) {
     throw std::logic_error("unknown algorithm");
 }
 
+/**
+ * @brief Remove seams until both requested dimensions are reached.
+ * @param img RGB image with storage matching its dimensions.
+ * @param target_w Requested final width, between one and the original width.
+ * @param target_h Requested final height, between one and the original height.
+ * @param algo Seam-finding algorithm.
+ * @param on_step Optional callback before each removal; receives the current image, selected seam
+ * and orientation. Exceptions propagate.
+ * @return Resized RGB copy; input is unchanged.
+ * @throws std::invalid_argument If either target lies outside 1..original dimension.
+ * @note Mixed targets alternate vertical and horizontal removal. Energy is recomputed each time.
+ * Callback exceptions and solver errors propagate.
+ * @see StepCallback
+ */
 Image resize(const Image& img, int target_w, int target_h, Algorithm algo,
              const StepCallback& on_step) {
     if (target_w < 1 || target_h < 1 || target_w > img.width || target_h > img.height)

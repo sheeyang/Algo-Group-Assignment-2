@@ -1,3 +1,7 @@
+/**
+ * @brief Locally cheapest connected seams without future-row look-ahead.
+ * @file seam_greedy.cpp
+ */
 #include <stdexcept>
 
 #include "seam.h"
@@ -23,6 +27,14 @@ namespace seam {
 //
 // Ties go to the leftmost column, both for the start pixel and for each step (GLOSSARY.md), so the
 // result is deterministic.
+/**
+ * @brief Choose the cheapest top pixel, then the cheapest reachable pixel in each row.
+ * @param e Input row-major energy map.
+ * @return Connected seam with leftmost local tie-breaking; global optimality is not guaranteed.
+ * @throws std::invalid_argument For an empty or inconsistent map.
+ * @par Complexity
+ * O(W+H) time and O(H) output storage.
+ */
 Seam find_seam_greedy(const EnergyMap& e) {
     const int W = e.width, H = e.height;
     if (W < 1 || H < 1) throw std::invalid_argument("find_seam_greedy: energy map is empty");

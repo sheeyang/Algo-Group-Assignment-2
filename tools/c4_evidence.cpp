@@ -1,3 +1,7 @@
+/**
+ * @brief Validated DP/Dinic report images and repeatable benchmark evidence.
+ * @file c4_evidence.cpp
+ */
 // C4 report evidence from the actual seamlib algorithms, with per-step checks.
 // Build the c4_evidence CMake target and run from the repository root.
 #include <cmath>
@@ -13,6 +17,13 @@
 
 using namespace seam;
 
+/**
+ * @brief Validate a report seam and sum its original energy.
+ * @param energy Energy map defining seam costs and dimensions.
+ * @param seam Candidate vertical seam in the energy map coordinates.
+ * @return Seam cost after validity checks.
+ * @throws std::runtime_error For invalid length, columns or connectivity.
+ */
 static double checked_cost(const EnergyMap& energy, const Seam& seam) {
     if (seam.size() != size_t(energy.height)) throw std::runtime_error("Wrong seam length");
     for (int y = 0; y < energy.height; ++y)
@@ -22,6 +33,11 @@ static double checked_cost(const EnergyMap& energy, const Seam& seam) {
     return seam_cost(energy, seam);
 }
 
+/**
+ * @brief Validated DP/Dinic report images and repeatable benchmark evidence.
+ * @return Zero on normal completion; program-specific validation errors are reported or propagate.
+ * @note Run benchmark/evidence tools from the repository root.
+ */
 int main() {
     try {
 #ifndef NDEBUG

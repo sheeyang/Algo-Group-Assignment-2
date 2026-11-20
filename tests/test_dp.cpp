@@ -1,3 +1,7 @@
+/**
+ * @brief Hand-checked, exhaustive and random validation of DP seams and tie rules.
+ * @file test_dp.cpp
+ */
 #include <algorithm>
 #include <cstdlib>
 #include <random>
@@ -8,6 +12,13 @@
 
 using namespace seam;
 
+/**
+ * @brief Construct a small row-major energy fixture from supplied values.
+ * @param w Image/map width.
+ * @param h Image/map height.
+ * @param v Row-major energy values for the test fixture.
+ * @return Energy map carrying the given dimensions and values.
+ */
 static EnergyMap make(int w, int h, std::vector<double> v) {
     EnergyMap m;
     m.width = w;
@@ -18,6 +29,13 @@ static EnergyMap make(int w, int h, std::vector<double> v) {
 
 // A seam is valid when it has one column per row, every column is inside the image and
 // neighbouring rows differ by at most one column (GLOSSARY.md: Seam).
+/**
+ * @brief Check length, column bounds and adjacent-row connectivity.
+ * @param s Selected seam in current image coordinates.
+ * @param w Image/map width.
+ * @param h Image/map height.
+ * @return True exactly when the vertical seam is valid for the dimensions.
+ */
 static bool is_valid_seam(const Seam& s, int w, int h) {
     if (int(s.size()) != h) return false;
     for (int y = 0; y < h; ++y) {
@@ -31,6 +49,7 @@ static bool is_valid_seam(const Seam& s, int w, int h) {
 // Hand-checked cases
 // ---------------------------------------------------------------------------------------------
 
+/** @test DP finds the hand-checked optimal seam. */
 TEST_CASE("DP finds the hand-checked optimal seam") {
     // Column 2 starts at 0 but is a trap (9 next). Unique optimum is columns 1,0,1: 1+1+1 = 3.
     EnergyMap e = make(3, 3, {
@@ -43,6 +62,7 @@ TEST_CASE("DP finds the hand-checked optimal seam") {
     CHECK(seam_cost(e, s) == doctest::Approx(3.0));
 }
 
+/** @test DP seams are connected. */
 TEST_CASE("DP seams are connected") {
     EnergyMap e = make(4, 4, {
         3, 8, 2, 7,
@@ -59,22 +79,26 @@ TEST_CASE("DP seams are connected") {
 // Edge cases: tiny maps
 // ---------------------------------------------------------------------------------------------
 
+/** @test DP on a width-1 map must take the only column. */
 TEST_CASE("DP on a width-1 map must take the only column") {
     EnergyMap e = make(1, 4, {7, 3, 9, 1});
     CHECK(find_seam_dp(e) == Seam{0, 0, 0, 0});
 }
 
+/** @test DP on a height-1 map picks the cheapest pixel. */
 TEST_CASE("DP on a height-1 map picks the cheapest pixel") {
     EnergyMap e = make(5, 1, {4, 2, 9, 2, 7});
     CHECK(find_seam_dp(e) == Seam{1});  // leftmost of the two 2s
 }
 
+/** @test DP on a 1x1 map. */
 TEST_CASE("DP on a 1x1 map") {
     EnergyMap e = make(1, 1, {42});
     CHECK(find_seam_dp(e) == Seam{0});
     CHECK(seam_cost(e, Seam{0}) == doctest::Approx(42.0));
 }
 
+/** @test DP rejects an empty or inconsistent energy map. */
 TEST_CASE("DP rejects an empty or inconsistent energy map") {
     CHECK_THROWS_AS(find_seam_dp(EnergyMap{}), std::invalid_argument);
     CHECK_THROWS_AS(find_seam_dp(make(0, 3, {})), std::invalid_argument);
@@ -86,6 +110,7 @@ TEST_CASE("DP rejects an empty or inconsistent energy map") {
 // Tie-breaking (GLOSSARY.md: Optimal seam): leftmost, judged from the bottom row upward
 // ---------------------------------------------------------------------------------------------
 
+/** @test Tie: all-equal energy gives the leftmost column everywhere. */
 TEST_CASE("Tie: all-equal energy gives the leftmost column everywhere") {
     EnergyMap e = make(3, 3, {
         0, 0, 0,
@@ -95,6 +120,7 @@ TEST_CASE("Tie: all-equal energy gives the leftmost column everywhere") {
     CHECK(find_seam_dp(e) == Seam{0, 0, 0});
 }
 
+/** @test Tie in the last row goes to the leftmost cell. */
 TEST_CASE("Tie in the last row goes to the leftmost cell") {
     // Both bottom corners cost 1 in total; column 0 must win.
     EnergyMap e = make(3, 2, {
@@ -104,6 +130,7 @@ TEST_CASE("Tie in the last row goes to the leftmost cell") {
     CHECK(find_seam_dp(e)[1] == 0);
 }
 
+/** @test Tie while backtracking: left beats straight beats right. */
 TEST_CASE("Tie while backtracking: left beats straight beats right") {
     SUBCASE("all three parents tie: left wins") {
         EnergyMap e = make(3, 2, {
@@ -147,6 +174,15 @@ TEST_CASE("Tie while backtracking: left beats straight beats right") {
 // ---------------------------------------------------------------------------------------------
 
 // Enumerate every seam of a W x H map (no pruning).
+/**
+ * @brief Enumerate all connected seam completions for a tiny exhaustive test.
+ * @param e Input row-major energy map.
+ * @param y Zero-based row coordinate.
+ * @param cur Working seam whose prefix is extended during enumeration.
+ * @param out Destination vector receiving completed seams.
+ * @pre cur has one entry per row; y identifies the next row to fill.
+ * @note Appends completed seams to out; exponential growth limits this to small maps.
+ */
 static void enumerate_seams(const EnergyMap& e, int y, Seam& cur, std::vector<Seam>& out) {
     if (y == e.height) {
         out.push_back(cur);
@@ -159,6 +195,7 @@ static void enumerate_seams(const EnergyMap& e, int y, Seam& cur, std::vector<Se
     }
 }
 
+/** @test Brute force: DP cost equals the minimum over every seam, and ties follow the rule. */
 TEST_CASE("Brute force: DP cost equals the minimum over every seam, and ties follow the rule") {
     std::mt19937 rng(20260401);  // fixed seed: the test is deterministic
     int maps_checked = 0;
@@ -205,6 +242,7 @@ TEST_CASE("Brute force: DP cost equals the minimum over every seam, and ties fol
     CHECK(maps_checked == 6 * 6 * 50);  // 1800 maps, well above the required 200
 }
 
+/** @test Random larger maps: the returned seam is always valid. */
 TEST_CASE("Random larger maps: the returned seam is always valid") {
     std::mt19937 rng(7);
     std::uniform_real_distribution<double> val(0.0, 1000.0);
@@ -222,6 +260,7 @@ TEST_CASE("Random larger maps: the returned seam is always valid") {
 // seam_cost and remove_vertical_seam
 // ---------------------------------------------------------------------------------------------
 
+/** @test seam_cost sums the energy under the seam. */
 TEST_CASE("seam_cost sums the energy under the seam") {
     EnergyMap e = make(3, 3, {
         1, 2, 3,
@@ -232,6 +271,7 @@ TEST_CASE("seam_cost sums the energy under the seam") {
     CHECK(seam_cost(e, Seam{1, 2, 1}) == doctest::Approx(2 + 6 + 8));
 }
 
+/** @test remove_vertical_seam shrinks width by one. */
 TEST_CASE("remove_vertical_seam shrinks width by one") {
     Image img(3, 2);
     Image out = remove_vertical_seam(img, Seam{1, 1});
@@ -239,6 +279,7 @@ TEST_CASE("remove_vertical_seam shrinks width by one") {
     CHECK(out.height == 2);
 }
 
+/** @test remove_vertical_seam deletes exactly the seam pixels and keeps the rest in order. */
 TEST_CASE("remove_vertical_seam deletes exactly the seam pixels and keeps the rest in order") {
     // 4x2 image whose red channel is a unique id per pixel (y*4 + x).
     Image img(4, 2);
@@ -260,6 +301,7 @@ TEST_CASE("remove_vertical_seam deletes exactly the seam pixels and keeps the re
         }
 }
 
+/** @test remove_vertical_seam on a width-1 image leaves zero columns. */
 TEST_CASE("remove_vertical_seam on a width-1 image leaves zero columns") {
     Image img(1, 3);
     Image out = remove_vertical_seam(img, Seam{0, 0, 0});
@@ -268,6 +310,7 @@ TEST_CASE("remove_vertical_seam on a width-1 image leaves zero columns") {
     CHECK(out.rgb.empty());
 }
 
+/** @test remove_vertical_seam rejects malformed seams. */
 TEST_CASE("remove_vertical_seam rejects malformed seams") {
     Image img(3, 2);
     CHECK_THROWS_AS(remove_vertical_seam(img, Seam{1}), std::invalid_argument);        // too short

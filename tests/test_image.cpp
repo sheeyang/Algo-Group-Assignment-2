@@ -1,3 +1,7 @@
+/**
+ * @brief RGB storage, transposition and image-file round-trip tests.
+ * @file test_image.cpp
+ */
 #include <cstdio>
 #include <filesystem>
 #include <stdexcept>
@@ -8,6 +12,12 @@
 using namespace seam;
 
 // Image where every pixel has a distinct, recoverable value.
+/**
+ * @brief Generate a deterministic RGB pattern for image/resize tests.
+ * @param w Image/map width.
+ * @param h Image/map height.
+ * @return Owned fixture with the requested dimensions.
+ */
 static Image make_image(int w, int h) {
     Image img(w, h);
     for (int y = 0; y < h; ++y)
@@ -16,6 +26,7 @@ static Image make_image(int w, int h) {
     return img;
 }
 
+/** @test Image constructor sizes the buffer and zero-fills. */
 TEST_CASE("Image constructor sizes the buffer and zero-fills") {
     Image img(4, 3);
     CHECK(img.width == 4);
@@ -24,6 +35,7 @@ TEST_CASE("Image constructor sizes the buffer and zero-fills") {
     for (uint8_t v : img.rgb) CHECK(v == 0);
 }
 
+/** @test transpose swaps the dimensions and moves pixel (x,y) to (y,x). */
 TEST_CASE("transpose swaps the dimensions and moves pixel (x,y) to (y,x)") {
     Image img = make_image(5, 3);
     Image t = transpose(img);
@@ -34,6 +46,7 @@ TEST_CASE("transpose swaps the dimensions and moves pixel (x,y) to (y,x)") {
             for (int c = 0; c < 3; ++c) CHECK(t.px(y, x)[c] == img.px(x, y)[c]);
 }
 
+/** @test transpose twice is the identity. */
 TEST_CASE("transpose twice is the identity") {
     for (auto [w, h] : {std::pair{5, 3}, {1, 4}, {4, 1}, {1, 1}, {7, 7}}) {
         Image img = make_image(w, h);
@@ -45,10 +58,12 @@ TEST_CASE("transpose twice is the identity") {
     }
 }
 
+/** @test load_image throws on a missing file. */
 TEST_CASE("load_image throws on a missing file") {
     CHECK_THROWS_AS(load_image("this/file/does/not/exist.png"), std::runtime_error);
 }
 
+/** @test PNG save then load round-trips exactly. */
 TEST_CASE("PNG save then load round-trips exactly") {
     Image img = make_image(6, 4);
     const std::string path =
@@ -61,6 +76,7 @@ TEST_CASE("PNG save then load round-trips exactly") {
     CHECK(back.rgb == img.rgb);
 }
 
+/** @test save_image throws when the path cannot be written. */
 TEST_CASE("save_image throws when the path cannot be written") {
     Image img = make_image(2, 2);
     CHECK_THROWS_AS(save_image(img, "this/dir/does/not/exist/out.png"), std::runtime_error);

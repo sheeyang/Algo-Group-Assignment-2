@@ -1,3 +1,7 @@
+/**
+ * @brief Greedy tie rules, connected seams and comparison with optimal DP costs.
+ * @file test_greedy.cpp
+ */
 #include <cstdlib>
 #include <random>
 #include <stdexcept>
@@ -8,6 +12,13 @@
 
 using namespace seam;
 
+/**
+ * @brief Construct a small row-major energy fixture from supplied values.
+ * @param w Image/map width.
+ * @param h Image/map height.
+ * @param v Row-major energy values for the test fixture.
+ * @return Energy map carrying the given dimensions and values.
+ */
 static EnergyMap make(int w, int h, std::vector<double> v) {
     EnergyMap m;
     m.width = w;
@@ -17,6 +28,13 @@ static EnergyMap make(int w, int h, std::vector<double> v) {
 }
 
 // One column per row, inside the image, neighbouring rows at most one column apart (GLOSSARY.md: Seam).
+/**
+ * @brief Check length, column bounds and adjacent-row connectivity.
+ * @param s Selected seam in current image coordinates.
+ * @param w Image/map width.
+ * @param h Image/map height.
+ * @return True exactly when the vertical seam is valid for the dimensions.
+ */
 static bool is_valid_seam(const Seam& s, int w, int h) {
     if (int(s.size()) != h) return false;
     for (int y = 0; y < h; ++y) {
@@ -30,6 +48,7 @@ static bool is_valid_seam(const Seam& s, int w, int h) {
 // The trap: greedy is strictly worse than DP (the example for the report, R2)
 // ---------------------------------------------------------------------------------------------
 
+/** @test Greedy gets trapped and pays strictly more than DP. */
 TEST_CASE("Greedy gets trapped and pays strictly more than DP") {
     // Greedy starts at the 1 in column 0 (cheapest top pixel). From column 0 it can only reach
     // columns 0 and 1, which are 8 in both lower rows, so it pays 1 + 8 + 8 = 17.
@@ -47,6 +66,7 @@ TEST_CASE("Greedy gets trapped and pays strictly more than DP") {
     CHECK(seam_cost(e, d) == doctest::Approx(6.0));
 }
 
+/** @test Greedy follows the hand-checked path. */
 TEST_CASE("Greedy follows the hand-checked path") {
     // Start: column 2 (the 0). Row 1 from 2: {9, 9} at columns 1, 2 -> leftmost, column 1.
     // Row 2 from 1: {5, 1, 9} at columns 0, 1, 2 -> column 1. Cost 0 + 9 + 1 = 10 (DP finds 3).
@@ -61,6 +81,7 @@ TEST_CASE("Greedy follows the hand-checked path") {
     CHECK(seam_cost(e, find_seam_dp(e)) == doctest::Approx(3.0));
 }
 
+/** @test Greedy equals DP when the locally cheapest path is also the best. */
 TEST_CASE("Greedy equals DP when the locally cheapest path is also the best") {
     // A single cheap column: both must take it.
     EnergyMap e = make(4, 4, {
@@ -77,20 +98,24 @@ TEST_CASE("Greedy equals DP when the locally cheapest path is also the best") {
 // Edge cases: tiny maps and borders
 // ---------------------------------------------------------------------------------------------
 
+/** @test Greedy on a width-1 map must take the only column. */
 TEST_CASE("Greedy on a width-1 map must take the only column") {
     EnergyMap e = make(1, 4, {7, 3, 9, 1});
     CHECK(find_seam_greedy(e) == Seam{0, 0, 0, 0});
 }
 
+/** @test Greedy on a height-1 map picks the cheapest pixel. */
 TEST_CASE("Greedy on a height-1 map picks the cheapest pixel") {
     EnergyMap e = make(5, 1, {4, 2, 9, 2, 7});
     CHECK(find_seam_greedy(e) == Seam{1});  // leftmost of the two 2s
 }
 
+/** @test Greedy on a 1x1 map. */
 TEST_CASE("Greedy on a 1x1 map") {
     CHECK(find_seam_greedy(make(1, 1, {42})) == Seam{0});
 }
 
+/** @test Greedy at the left and right borders only considers columns inside the image. */
 TEST_CASE("Greedy at the left and right borders only considers columns inside the image") {
     // Right border: from column 2 the candidates are columns 1 and 2 only.
     EnergyMap right = make(3, 2, {
@@ -106,6 +131,7 @@ TEST_CASE("Greedy at the left and right borders only considers columns inside th
     CHECK(find_seam_greedy(left) == Seam{0, 1});  // column 2 (the 0) is out of reach
 }
 
+/** @test Greedy rejects an empty or inconsistent energy map. */
 TEST_CASE("Greedy rejects an empty or inconsistent energy map") {
     CHECK_THROWS_AS(find_seam_greedy(EnergyMap{}), std::invalid_argument);
     CHECK_THROWS_AS(find_seam_greedy(make(0, 3, {})), std::invalid_argument);
@@ -117,11 +143,13 @@ TEST_CASE("Greedy rejects an empty or inconsistent energy map") {
 // Ties: leftmost wins, for the start pixel and for every step
 // ---------------------------------------------------------------------------------------------
 
+/** @test Tie: all-equal energy gives the leftmost column everywhere. */
 TEST_CASE("Tie: all-equal energy gives the leftmost column everywhere") {
     EnergyMap e = make(4, 3, std::vector<double>(12, 5.0));
     CHECK(find_seam_greedy(e) == Seam{0, 0, 0});
 }
 
+/** @test Tie in a step: left beats straight beats right. */
 TEST_CASE("Tie in a step: left beats straight beats right") {
     // Start at column 1 (the 0). Row 1: all three candidates equal -> column 0.
     EnergyMap all3 = make(3, 2, {
@@ -153,6 +181,7 @@ TEST_CASE("Tie in a step: left beats straight beats right") {
 // Random maps: greedy is always valid and never cheaper than DP
 // ---------------------------------------------------------------------------------------------
 
+/** @test Random maps: greedy seam is valid and its cost is never below DP. */
 TEST_CASE("Random maps: greedy seam is valid and its cost is never below DP") {
     std::mt19937 rng(20261113);  // fixed seed: the test is deterministic
     std::uniform_int_distribution<int> dim(1, 12), val(0, 9);
@@ -175,6 +204,7 @@ TEST_CASE("Random maps: greedy seam is valid and its cost is never below DP") {
     MESSAGE("greedy strictly worse than DP on " << strictly_worse << " of " << maps << " random maps");
 }
 
+/** @test Random larger maps: greedy seam is always valid. */
 TEST_CASE("Random larger maps: greedy seam is always valid") {
     std::mt19937 rng(11);
     std::uniform_real_distribution<double> val(0.0, 1000.0);
@@ -190,6 +220,7 @@ TEST_CASE("Random larger maps: greedy seam is always valid") {
 // End to end: resize with the greedy finder
 // ---------------------------------------------------------------------------------------------
 
+/** @test Greedy resize reaches the exact target size in both directions. */
 TEST_CASE("Greedy resize reaches the exact target size in both directions") {
     std::mt19937 rng(3);
     std::uniform_int_distribution<int> val(0, 255);

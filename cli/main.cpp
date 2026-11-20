@@ -1,3 +1,7 @@
+/**
+ * @brief Command-line resize, step-frame export and benchmark entry point.
+ * @file main.cpp
+ */
 // seamcli: headless seam carving and benchmarks. Run `seamcli --help` for the usage below.
 //
 // Exit codes: 0 success, 1 runtime error (unreadable image, failed write, algorithm error),
@@ -52,11 +56,19 @@ const char* kUsage =
     "CSV columns: algorithm,width,height,seams,ms,find_ms,total_cost\n";
 
 // A command-line mistake: printed with the usage hint, exit code 2.
+/** @brief Invalid CLI syntax/settings, translated to process exit code 2. */
 struct UsageError : std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
 // Whole-string number parsing: "12x" or "" is an error, not 12 or 0.
+/**
+ * @brief Parse an entire CLI value as a signed integer.
+ * @param opt CLI option name included in validation diagnostics.
+ * @param s Input text to parse or compare.
+ * @return Parsed value; trailing characters are rejected.
+ * @throws UsageError For invalid syntax or values outside int range.
+ */
 int to_int(const std::string& opt, const std::string& s) {
     size_t used = 0;
     int v = 0;
@@ -69,6 +81,13 @@ int to_int(const std::string& opt, const std::string& s) {
     return v;
 }
 
+/**
+ * @brief Parse an entire CLI value as a finite floating-point number.
+ * @param opt CLI option name included in validation diagnostics.
+ * @param s Input text to parse or compare.
+ * @return Parsed finite value; trailing characters are rejected.
+ * @throws UsageError For invalid syntax, nonfinite values or range errors.
+ */
 double to_double(const std::string& opt, const std::string& s) {
     size_t used = 0;
     double v = 0;
@@ -82,6 +101,13 @@ double to_double(const std::string& opt, const std::string& s) {
     return v;
 }
 
+/**
+ * @brief Split a CLI list while rejecting empty entries.
+ * @param opt CLI option name included in validation diagnostics.
+ * @param s Input text to parse or compare.
+ * @return Nonempty entries in original order.
+ * @throws UsageError For an empty list or empty comma-separated item.
+ */
 std::vector<std::string> split_commas(const std::string& opt, const std::string& s) {
     std::vector<std::string> parts;
     std::stringstream ss(s);
@@ -94,6 +120,13 @@ std::vector<std::string> split_commas(const std::string& opt, const std::string&
     return parts;
 }
 
+/**
+ * @brief Translate an algorithm value into a CLI-facing enum or usage error.
+ * @param opt CLI option name included in validation diagnostics.
+ * @param s Input text to parse or compare.
+ * @return Matching algorithm.
+ * @throws UsageError For an unknown algorithm name.
+ */
 seam::Algorithm to_algorithm(const std::string& opt, const std::string& s) {
     try {
         return seam::parse_algorithm(s);
@@ -103,12 +136,25 @@ seam::Algorithm to_algorithm(const std::string& opt, const std::string& s) {
 }
 
 // The parsed command line: positional arguments in order, and each --option with its value.
+/** @brief Parsed positional tokens and unique --option/value pairs. */
 struct Args {
     std::vector<std::string> positional;
     std::map<std::string, std::string> opts;
+    /**
+     * @brief Check whether the parsed command line contains an option.
+     * @param k Option key to look up, such as --width.
+     * @return True when the option key is present.
+     */
     bool has(const std::string& k) const { return opts.count(k) != 0; }
 };
 
+/**
+ * @brief Collect positional arguments and validated option/value pairs.
+ * @param argc Argument count, including the executable name.
+ * @param argv Null-terminated command-line argument strings.
+ * @return Parsed arguments; numerical validation is performed by the selected mode.
+ * @throws UsageError For unknown/repeated options or missing option values.
+ */
 Args parse(int argc, char** argv) {
     static const std::vector<std::string> known = {"--algo",  "--width",  "--height", "--percent",
                                                    "--bench", "--out",    "--algos",  "--scales",
@@ -131,11 +177,25 @@ Args parse(int argc, char** argv) {
 }
 
 // Rejects options that belong to the other mode, so a typo is not silently ignored.
+/**
+ * @brief Reject options belonging to another command mode.
+ * @param a Parsed command-line arguments.
+ * @param opts Option keys forbidden in the current CLI mode.
+ * @param mode Mode description included in usage errors.
+ * @throws UsageError If a forbidden option is present.
+ */
 void reject(const Args& a, const std::vector<std::string>& opts, const std::string& mode) {
     for (const std::string& k : opts)
         if (a.has(k)) throw UsageError(k + " cannot be used " + mode);
 }
 
+/**
+ * @brief Validate CLI resize options, invoke seamlib and save optional step frames.
+ * @param a Parsed command-line arguments.
+ * @return Zero on normal completion.
+ * @throws UsageError For inconsistent options or invalid targets.
+ * @note Image I/O and algorithm exceptions propagate to main for reporting.
+ */
 int run_resize(const Args& a) {
     reject(a, {"--out", "--algos", "--scales", "--seams", "--repeats", "--budget-ms"}, "when resizing");
     const auto& p = a.positional;
@@ -200,6 +260,13 @@ int run_resize(const Args& a) {
     return 0;
 }
 
+/**
+ * @brief Validate CLI benchmark settings and export measurements as CSV.
+ * @param a Parsed command-line arguments.
+ * @return Zero on normal completion.
+ * @throws UsageError For invalid benchmark options.
+ * @throws std::runtime_error If the CSV cannot be opened or completed.
+ */
 int run_bench(const Args& a) {
     reject(a, {"--algo", "--width", "--height", "--percent", "--steps"}, "with --bench");
     if (!a.positional.empty()) throw UsageError("--bench takes no other positional arguments");
@@ -248,6 +315,13 @@ int run_bench(const Args& a) {
 
 }  // namespace
 
+/**
+ * @brief Command-line resize, step-frame export and benchmark entry point.
+ * @param argc Argument count, including the executable name.
+ * @param argv Null-terminated command-line argument strings.
+ * @return 0 on success/help, 2 for usage errors, 1 for runtime errors.
+ * @note Run benchmark/evidence tools from the repository root.
+ */
 int main(int argc, char** argv) {
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
