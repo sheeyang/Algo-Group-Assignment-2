@@ -1,0 +1,2 @@
+algorithm,width,height,seams,ms,find_ms,total_cost
+dinic,800,533,2,39122.312,39098.445,14110.924

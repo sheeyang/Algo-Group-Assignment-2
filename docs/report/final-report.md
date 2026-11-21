@@ -150,7 +150,7 @@ The five main images are team-generated 800 × 533 RGB PNGs. Each image presents
 | Person at beach | Preserve the person and the horizon. |
 | Wall and door | Preserve the door frame and other straight edges. |
 
-**Four-finder comparison.** We used box-scaled inputs from `landscape-tower.png` and removed two vertical seams per size. The recorded sizes are 100 × 67, 200 × 133, 400 × 267 and 800 × 533. The largest size has DP and greedy rows. Search time is the sum of the two finder calls. The file does not record repeat count, machine or compiler metadata for this run.
+**Four-finder comparison.** We used box-scaled inputs from `landscape-tower.png` and removed two vertical seams per size. The recorded sizes are 100 × 67, 200 × 133, 400 × 267 and 800 × 533. The largest size has DP, greedy and Dinic rows; EK was stopped after five minutes at that size. Search time is the sum of the two finder calls. The file does not record repeat count, machine or compiler metadata for this run. The 800 × 533 Dinic row is a single repeat from a later run of the same benchmark.
 
 **Solver benchmark.** A separate Windows MinGW GCC 13.2.0 Release run measured a single vertical seam on the same scene at widths from 32 to 800. The CPU and RAM were unrecorded for this run. Measurements use a steady clock and the median of three repeats where the time budget permits. The timer starts after computing energy. The graph-cut finder time includes graph construction, solver time and extraction. Solver time is also measured independently inside the call. An in-flight search finishes even when it exceeds the 5,000 ms budget. Later sizes for that solver are skipped.
 
@@ -164,13 +164,13 @@ The five main images are team-generated 800 × 533 RGB PNGs. Each image presents
 
 | Input and workload | DP | Greedy | EK | Dinic |
 | --- | ---: | ---: | ---: | ---: |
-| Portrait, 64 × 43, first seam | 92.844 | — | 92.844 | 92.844 |
-| Building, 64 × 43, first seam | 826.712 | — | 826.712 | 826.712 |
+| Portrait, 64 × 43, first seam | 92.844 | 127.450 | 92.844 | 92.844 |
+| Building, 64 × 43, first seam | 826.712 | 3,938.432 | 826.712 | 826.712 |
 | Landscape, 100 × 67, two seams | 3,486.44 | 4,132.97 | 3,486.44 | 3,486.44 |
 | Landscape, 200 × 133, two seams | 4,643.69 | 8,614.00 | 4,643.69 | 4,643.69 |
 | Landscape, 400 × 267, two seams | 7,500.56 | 14,075.60 | 7,500.56 | 7,500.56 |
 
-**Table 1.** First-seam costs and two-removal sums in energy units. A dash indicates no measurement was recorded for that comparison.
+**Table 1.** First-seam costs and two-removal sums in energy units. The greedy values for the two 64 × 43 fixtures come from a separate one-seam run of the same CLI benchmark.
 
 On both small fixtures, each graph-cut solver removed ten seams. The cost at every step matched DP run on that solver's current image within 10⁻⁶. The building's first seam and final pixels matched DP's. The portrait had different first-seam positions and different final pixels at the same seam cost on the initial map. Several seams can be optimal, and choosing one can change the map for the next removal.
 
@@ -195,13 +195,13 @@ On both small fixtures, each graph-cut solver removed ten seams. The cost at eve
 | 100 × 67 | 0.00689 | 0.000716 | 285.582 | 24.612 |
 | 200 × 133 | 0.03358 | 0.001338 | 4,849.02 | 323.661 |
 | 400 × 267 | 0.12715 | 0.003465 | 93,284.2 | 1,784.04 |
-| 800 × 533 | 0.30243 | 0.050885 | — | — |
+| 800 × 533 | 0.30243 | 0.050885 | — | 39,098.4 |
 
-**Table 2.** Accumulated finder time for two removals, excluding the shared pipeline.
+**Table 2.** Accumulated finder time for two removals, excluding the shared pipeline. A dash means the run was not completed: EK did not finish 800 × 533 within a five-minute limit and was stopped.
 
 ![Log-log plot of search time against image area with four separate curves](figures/report-runtime.png)
 
-**Figure 5.** Table 2 on logarithmic axes. The EK and Dinic curves end at their largest recorded size. Their times include building the network and extracting the seam.
+**Figure 5.** Table 2 on logarithmic axes. The EK curve ends at 400 × 267 because EK did not finish 800 × 533 within five minutes. Graph-cut times include building the network and extracting the seam.
 
 The separate solver benchmark shows what happens inside the graph-cut calls. At 128 × 85, EK used 3,356 BFS augmentations and took 1,889 ms in its solver. Dinic sent the same number of augmenting pushes in 89 level-graph phases and took 115 ms in its solver. EK crossed the five-second budget at 200 × 133, while Dinic first crossed it at 400 × 267. A separate single-run 1000 × 700 Dinic check matched the DP cost of 7,967.598 and took 109.75 s for the entire search.
 

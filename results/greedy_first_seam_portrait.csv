@@ -1,0 +1,3 @@
+algorithm,width,height,seams,ms,find_ms,total_cost
+dp,64,43,1,0.091,0.011,92.844
+greedy,64,43,1,0.070,0.001,127.450
